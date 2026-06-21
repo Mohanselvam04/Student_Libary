@@ -1,13 +1,15 @@
 const express = require('express');
-const mongoose = require('mongoose');
 const cors = require('cors');
 const http = require('http');
 const { Server } = require('socket.io');
 const dotenv = require('dotenv');
 const path = require('path');
+// MongoDB removed: no DB connection required here
 
-dotenv.config();
+// Load environment variables from backend/.env
+dotenv.config({ path: path.join(__dirname, '.env') });
 
+const net = require('net');
 const app = express();
 const server = http.createServer(app);
 const io = new Server(server, {
@@ -76,16 +78,44 @@ io.on('connection', (socket) => {
 // Make io accessible in routes
 app.set('io', io);
 
-// MongoDB Connection
-mongoose
-  .connect(process.env.MONGODB_URI)
-  .then(() => {
-    console.log('✅ MongoDB connected');
-    server.listen(process.env.PORT || 5000, () => {
-      console.log(`🚀 Server running on port ${process.env.PORT || 5000}`);
+// Start server without MongoDB
+const START_PORT = parseInt(process.env.PORT, 10) || 5000;
+
+async function findFreePort(start) {
+  let port = start;
+  while (port < start + 1000) {
+    const isFree = await new Promise((resolve) => {
+      const tester = net.createServer()
+        .once('error', (err) => {
+          tester.close?.();
+          resolve(false);
+        })
+        .once('listening', () => {
+          tester.close(() => resolve(true));
+        })
+        .listen(port);
     });
-  })
-  .catch((err) => {
-    console.error('❌ MongoDB connection error:', err);
+    if (isFree) return port;
+    port += 1;
+  }
+  throw new Error('No free ports available');
+}
+
+(async () => {
+  try {
+    const port = await findFreePort(START_PORT);
+    if (port !== START_PORT) {
+      console.warn(`Port ${START_PORT} in use — falling back to ${port}`);
+    }
+    server.listen(port, () => {
+      console.log(`🚀 Server running on port ${port}`);
+    });
+    server.on('error', (err) => {
+      console.error('Server error:', err);
+      process.exit(1);
+    });
+  } catch (err) {
+    console.error('Failed to start server:', err);
     process.exit(1);
-  });
+  }
+})();
