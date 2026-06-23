@@ -1,4 +1,5 @@
 const express = require('express');
+ const mongoose = require('mongoose');
 const cors = require('cors');
 const http = require('http');
 const { Server } = require('socket.io');
@@ -113,5 +114,17 @@ async function findFreePort(start) {
   } catch (err) {
     console.error('Failed to start server:', err);
     process.exit(1);
+  });
+
+// Global error handlers to avoid crashes without logs
+process.on('uncaughtException', (err) => {
+  console.error('Uncaught Exception:', err);
+  // Optional: perform cleanup here
+  process.exit(1);
+});
+
+process.on('unhandledRejection', (reason) => {
+  console.error('Unhandled Rejection:', reason);
+});
   }
 })();
