@@ -114,7 +114,8 @@ async function findFreePort(start) {
   } catch (err) {
     console.error('Failed to start server:', err);
     process.exit(1);
-  });
+  }
+})();
 
 // Global error handlers to avoid crashes without logs
 process.on('uncaughtException', (err) => {
@@ -126,5 +127,3 @@ process.on('uncaughtException', (err) => {
 process.on('unhandledRejection', (reason) => {
   console.error('Unhandled Rejection:', reason);
 });
-  }
-})();
