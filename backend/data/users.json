@@ -1,0 +1,25 @@
+[
+  {
+    "id": "1783175512267-9589",
+    "name": "admin",
+    "email": "admin@lms.com",
+    "password": "123456",
+    "role": "student",
+    "createdAt": "2026-07-04T14:31:52.267Z"
+  },
+  {
+    "id": "1783175640716-4894",
+    "name": "admin",
+    "email": "admin@lmss.com",
+    "password": "123456",
+    "role": "student",
+    "createdAt": "2026-07-04T14:34:00.717Z"
+  },
+  {
+    "id": "1783175985780-4959",
+    "name": "john",
+    "email": "john@gmail.com",
+    "password": "$2a$10$slUKAUPPHMO.JmmaJYT49.gcw9Y3SVI/ATYN3EjtLf5ib4hTN5Dj6",
+    "createdAt": "2026-07-04T14:39:45.780Z"
+  }
+]
