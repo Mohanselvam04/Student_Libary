@@ -4,12 +4,12 @@ const http = require('http');
 const { Server } = require('socket.io');
 const dotenv = require('dotenv');
 const path = require('path');
-// MongoDB removed: no DB connection required here
+const net = require('net');
 
-// Load environment variables from backend/.env
 dotenv.config({ path: path.join(__dirname, '.env') });
 
-const net = require('net');
+const { connect } = require('./db');
+
 const app = express();
 const server = http.createServer(app);
 const io = new Server(server, {
@@ -19,12 +19,10 @@ const io = new Server(server, {
   },
 });
 
-// Middleware
 app.use(cors({ origin: process.env.CLIENT_URL || 'http://localhost:3000' }));
 app.use(express.json());
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
-// Routes
 app.use('/api/auth', require('./routes/authRoutes'));
 app.use('/api/users', require('./routes/userRoutes'));
 app.use('/api/courses', require('./routes/courseRoutes'));
@@ -33,7 +31,6 @@ app.use('/api/messages', require('./routes/messageRoutes'));
 app.use('/api/ai', require('./routes/aiRoutes'));
 app.use('/api/admin', require('./routes/adminRoutes'));
 
-// Socket.IO for real-time messaging
 const onlineUsers = new Map();
 
 io.on('connection', (socket) => {
@@ -75,10 +72,8 @@ io.on('connection', (socket) => {
   });
 });
 
-// Make io accessible in routes
 app.set('io', io);
 
-// Start server without MongoDB
 const START_PORT = parseInt(process.env.PORT, 10) || 5000;
 
 async function findFreePort(start) {
@@ -86,7 +81,7 @@ async function findFreePort(start) {
   while (port < start + 1000) {
     const isFree = await new Promise((resolve) => {
       const tester = net.createServer()
-        .once('error', (err) => {
+        .once('error', () => {
           tester.close?.();
           resolve(false);
         })
@@ -103,6 +98,7 @@ async function findFreePort(start) {
 
 (async () => {
   try {
+    await connect();
     const port = await findFreePort(START_PORT);
     if (port !== START_PORT) {
       console.warn(`Port ${START_PORT} in use — falling back to ${port}`);

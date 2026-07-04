@@ -35,3 +35,7 @@ uploads/
 
 # Misc
 coverage/
+
+#docker
+docker-compose.override.yml
+docker/

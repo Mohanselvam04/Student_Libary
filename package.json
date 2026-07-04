@@ -1,3 +1,5 @@
 {
-  "dependencies": {}
+  "dependencies": {
+    "firebase": "^12.15.0"
+  }
 }
