@@ -1,8 +1,26 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
-import { GraduationCap, Mail, Lock, User, ArrowRight, Eye, EyeOff } from 'lucide-react';
+import { GraduationCap, Mail, Lock, User, ArrowRight, Eye, EyeOff, Check, X } from 'lucide-react';
 import toast from 'react-hot-toast';
+
+const validateEmail = (email) => {
+  if (!email) return false;
+  return email.toLowerCase().trim().endsWith('@gmail.com');
+};
+
+const validatePassword = (password) => ({
+  length: password.length >= 5,
+  upper: /[A-Z]/.test(password),
+  lower: /[a-z]/.test(password),
+  number: /\d/.test(password),
+  special: /[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]/.test(password),
+});
+
+const isPasswordStrong = (password) => {
+  const checks = validatePassword(password);
+  return checks.length && checks.upper && checks.lower && checks.number && checks.special;
+};
 
 const Register = () => {
   const [form, setForm] = useState({ name: '', email: '', password: '', role: 'student' });
@@ -11,14 +29,25 @@ const Register = () => {
   const { register } = useAuth();
   const navigate = useNavigate();
 
+  const passwordChecks = validatePassword(form.password);
+
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (form.password.length < 6) return toast.error('Password must be at least 6 characters');
+    if (!validateEmail(form.email)) {
+      return toast.error('Email must be a valid @gmail.com address');
+    }
+    if (!isPasswordStrong(form.password)) {
+      return toast.error('Password must be 5+ chars and include upper, lower, number, special character');
+    }
     setLoading(true);
     try {
       await register(form);
       toast.success('Account created successfully!');
-      navigate('/dashboard');
+      if (form.role === 'admin') {
+        navigate('/admin');
+      } else {
+        navigate('/dashboard');
+      }
     } catch (err) {
       toast.error(err.response?.data?.message || 'Registration failed');
     } finally {
@@ -41,30 +70,33 @@ const Register = () => {
         <div className="card" style={{ padding: 32 }}>
           <form onSubmit={handleSubmit}>
             <div className="form-group">
-              <label>Full Name</label>
+              <label htmlFor="name">Full Name</label>
               <div style={{ position: 'relative' }}>
                 <User size={16} style={{ position: 'absolute', left: 14, top: '50%', transform: 'translateY(-50%)', color: 'var(--text-faint)' }} />
-                <input type="text" placeholder="John Doe" value={form.name}
+                <input id="name" type="text" placeholder="John Doe" value={form.name}
                   onChange={e => setForm({ ...form, name: e.target.value })}
                   style={{ paddingLeft: 42 }} required />
               </div>
             </div>
 
             <div className="form-group">
-              <label>Email Address</label>
+              <label htmlFor="email">Email Address</label>
               <div style={{ position: 'relative' }}>
                 <Mail size={16} style={{ position: 'absolute', left: 14, top: '50%', transform: 'translateY(-50%)', color: 'var(--text-faint)' }} />
-                <input type="email" placeholder="you@example.com" value={form.email}
+                <input id="email" type="email" placeholder="you@gmail.com" value={form.email}
                   onChange={e => setForm({ ...form, email: e.target.value })}
                   style={{ paddingLeft: 42 }} required />
+              </div>
+              <div style={{ marginTop: 8, fontSize: 12, color: 'var(--text-muted)' }}>
+                Only Gmail addresses are accepted.
               </div>
             </div>
 
             <div className="form-group">
-              <label>Password</label>
+              <label htmlFor="password">Password</label>
               <div style={{ position: 'relative' }}>
                 <Lock size={16} style={{ position: 'absolute', left: 14, top: '50%', transform: 'translateY(-50%)', color: 'var(--text-faint)' }} />
-                <input type={showPassword ? 'text' : 'password'} placeholder="Min 6 characters" value={form.password}
+                <input id="password" type={showPassword ? 'text' : 'password'} placeholder="Create strong password" value={form.password}
                   onChange={e => setForm({ ...form, password: e.target.value })}
                   style={{ paddingLeft: 42, paddingRight: 42 }} required />
                 <button type="button" onClick={() => setShowPassword(!showPassword)}
@@ -72,24 +104,51 @@ const Register = () => {
                   {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
                 </button>
               </div>
-            </div>
-
-            <div className="form-group">
-              <label>I am joining as</label>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
-                {['student', 'instructor'].map(role => (
-                  <button key={role} type="button" onClick={() => setForm({ ...form, role })}
-                    style={{
-                      padding: '12px', borderRadius: 10, border: `2px solid ${form.role === role ? 'var(--primary)' : 'var(--border)'}`,
-                      background: form.role === role ? 'rgba(79,70,229,0.15)' : 'var(--bg-card2)',
-                      color: form.role === role ? 'var(--primary-light)' : 'var(--text-muted)',
-                      cursor: 'pointer', fontWeight: 600, fontSize: 14, textTransform: 'capitalize', transition: 'all 0.2s'
-                    }}>
-                    {role === 'student' ? '🎓' : '👩‍🏫'} {role}
-                  </button>
-                ))}
+              <div style={{ marginTop: 10, display: 'grid', gap: 6, fontSize: 12, color: 'var(--text-muted)' }}>
+                <div style={{ display: 'flex', gap: 6, alignItems: 'center', color: passwordChecks.length ? '#10b981' : 'var(--text-muted)' }}>
+                  {passwordChecks.length ? <Check size={14} /> : <X size={14} />} At least 5 characters
+                </div>
+                <div style={{ display: 'flex', gap: 6, alignItems: 'center', color: passwordChecks.upper ? '#10b981' : 'var(--text-muted)' }}>
+                  {passwordChecks.upper ? <Check size={14} /> : <X size={14} />} One uppercase letter
+                </div>
+                <div style={{ display: 'flex', gap: 6, alignItems: 'center', color: passwordChecks.lower ? '#10b981' : 'var(--text-muted)' }}>
+                  {passwordChecks.lower ? <Check size={14} /> : <X size={14} />} One lowercase letter
+                </div>
+                <div style={{ display: 'flex', gap: 6, alignItems: 'center', color: passwordChecks.number ? '#10b981' : 'var(--text-muted)' }}>
+                  {passwordChecks.number ? <Check size={14} /> : <X size={14} />} One number
+                </div>
+                <div style={{ display: 'flex', gap: 6, alignItems: 'center', color: passwordChecks.special ? '#10b981' : 'var(--text-muted)' }}>
+                  {passwordChecks.special ? <Check size={14} /> : <X size={14} />} One special character
+                </div>
               </div>
             </div>
+
+            <fieldset className="form-group" style={{ border: 'none', padding: 0, margin: 0 }}>
+              <legend style={{ marginBottom: 10, fontWeight: 600, color: 'var(--text-default)' }}>I am joining as</legend>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 10 }}>
+                {['student', 'instructor', 'admin'].map((roleItem) => {
+                  let icon = '🛡️';
+                  if (roleItem === 'student') icon = '🎓';
+                  else if (roleItem === 'instructor') icon = '👩‍🏫';
+                  return (
+                    <button
+                      key={roleItem}
+                      type="button"
+                      aria-pressed={form.role === roleItem}
+                      onClick={() => setForm({ ...form, role: roleItem })}
+                      style={{
+                        padding: '12px', borderRadius: 10, border: `2px solid ${form.role === roleItem ? 'var(--primary)' : 'var(--border)'}`,
+                        background: form.role === roleItem ? 'rgba(79,70,229,0.15)' : 'var(--bg-card2)',
+                        color: form.role === roleItem ? 'var(--primary-light)' : 'var(--text-muted)',
+                        cursor: 'pointer', fontWeight: 600, fontSize: 14, textTransform: 'capitalize', transition: 'all 0.2s'
+                      }}
+                    >
+                      {icon} {roleItem}
+                    </button>
+                  );
+                })}
+              </div>
+            </fieldset>
 
             <button type="submit" className="btn btn-primary" style={{ width: '100%', justifyContent: 'center', padding: '14px', fontSize: 15 }} disabled={loading}>
               {loading ? 'Creating account...' : <><span>Create Account</span><ArrowRight size={18} /></>}

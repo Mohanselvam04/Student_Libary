@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import axios from 'axios';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { GraduationCap, Mail, Lock, Eye, EyeOff, ArrowRight } from 'lucide-react';
@@ -16,8 +17,9 @@ const Login = () => {
     setLoading(true);
     try {
       const user = await login(form.email, form.password);
+      const redirectRes = await axios.get('/api/auth/redirect');
       toast.success(`Welcome back, ${user.name}!`);
-      navigate(user.role === 'admin' ? '/admin' : '/dashboard');
+      navigate(redirectRes.data.redirectTo || (user.role === 'admin' ? '/admin' : '/dashboard'));
     } catch (err) {
       toast.error(err.response?.data?.message || 'Login failed');
     } finally {
@@ -58,20 +60,20 @@ const Login = () => {
 
           <form onSubmit={handleSubmit}>
             <div className="form-group">
-              <label>Email Address</label>
+              <label htmlFor="email">Email Address</label>
               <div style={{ position: 'relative' }}>
                 <Mail size={16} style={{ position: 'absolute', left: 14, top: '50%', transform: 'translateY(-50%)', color: 'var(--text-faint)' }} />
-                <input type="email" placeholder="you@example.com" value={form.email}
+                <input id="email" type="email" placeholder="you@example.com" value={form.email}
                   onChange={e => setForm({ ...form, email: e.target.value })}
                   style={{ paddingLeft: 42 }} required />
               </div>
             </div>
 
             <div className="form-group">
-              <label>Password</label>
+              <label htmlFor="password">Password</label>
               <div style={{ position: 'relative' }}>
                 <Lock size={16} style={{ position: 'absolute', left: 14, top: '50%', transform: 'translateY(-50%)', color: 'var(--text-faint)' }} />
-                <input type={showPassword ? 'text' : 'password'} placeholder="••••••••" value={form.password}
+                <input id="password" type={showPassword ? 'text' : 'password'} placeholder="••••••••" value={form.password}
                   onChange={e => setForm({ ...form, password: e.target.value })}
                   style={{ paddingLeft: 42, paddingRight: 42 }} required />
                 <button type="button" onClick={() => setShowPassword(!showPassword)}
@@ -91,13 +93,6 @@ const Login = () => {
             <Link to="/register" style={{ color: 'var(--primary-light)', fontWeight: 600 }}>Create one</Link>
           </p>
 
-          <div style={{ marginTop: 32, padding: 16, background: 'var(--bg-card)', borderRadius: 10, border: '1px solid var(--border)' }}>
-            <div style={{ fontSize: 12, color: 'var(--text-muted)', marginBottom: 8, fontWeight: 600 }}>Demo Accounts</div>
-            <div style={{ fontSize: 12, color: 'var(--text-faint)', lineHeight: 1.8 }}>
-              Admin: admin@lms.com / admin123<br />
-              Student: student@lms.com / student123
-            </div>
-          </div>
         </div>
       </div>
 
