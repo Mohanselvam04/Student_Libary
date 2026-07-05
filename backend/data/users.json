@@ -4,7 +4,7 @@
     "name": "admin",
     "email": "admin@lms.com",
     "password": "123456",
-    "role": "student",
+    "role": "admin",
     "createdAt": "2026-07-04T14:31:52.267Z"
   },
   {
@@ -12,7 +12,7 @@
     "name": "admin",
     "email": "admin@lmss.com",
     "password": "123456",
-    "role": "student",
+    "role": "admin",
     "createdAt": "2026-07-04T14:34:00.717Z"
   },
   {
@@ -20,6 +20,15 @@
     "name": "john",
     "email": "john@gmail.com",
     "password": "$2a$10$slUKAUPPHMO.JmmaJYT49.gcw9Y3SVI/ATYN3EjtLf5ib4hTN5Dj6",
+    "role": "student",
     "createdAt": "2026-07-04T14:39:45.780Z"
+  },
+  {
+    "id": "1783176100000-1000",
+    "name": "instructor",
+    "email": "instructor@lms.com",
+    "password": "123456",
+    "role": "instructor",
+    "createdAt": "2026-07-05T00:00:00.000Z"
   }
 ]
