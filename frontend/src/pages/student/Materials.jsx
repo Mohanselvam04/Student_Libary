@@ -4,6 +4,9 @@ import Sidebar from '../../components/layout/Sidebar';
 import { Search, Upload, FileText, Download, Trash2, File } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { useAuth } from '../../context/AuthContext';
+import ConfirmModal from '../../components/common/ConfirmModal';
+
+
 
 const TYPE_ICONS = { pdf: '📄', video: '🎬', image: '🖼️', doc: '📝', other: '📁' };
 
@@ -17,6 +20,7 @@ const Materials = () => {
   const [uploadForm, setUploadForm] = useState({ title: '', description: '', isPublic: true });
   const [file, setFile] = useState(null);
   const [uploading, setUploading] = useState(false);
+  const [confirmModal, setConfirmModal] = useState({ isOpen: false, materialId: null });
   const fileRef = useRef();
 
   const isInstructor = user?.role === 'instructor' || user?.role === 'admin';
@@ -56,8 +60,9 @@ const Materials = () => {
     } finally { setUploading(false); }
   };
 
-  const handleDelete = async (id) => {
-    if (!window.confirm('Delete this material?')) return;
+  const handleConfirmDelete = async () => {
+    const id = confirmModal.materialId;
+    if (!id) return;
     try {
       await axios.delete(`/api/materials/${id}`);
       toast.success('Deleted');
@@ -135,7 +140,7 @@ const Materials = () => {
                       <Download size={14} /> Download
                     </a>
                     {(mat.uploadedBy?._id === user?._id || user?.role === 'admin') && (
-                      <button className="btn btn-danger btn-sm" onClick={() => handleDelete(mat._id)}>
+                      <button className="btn btn-danger btn-sm" onClick={() => setConfirmModal({ isOpen: true, materialId: mat._id })}>
                         <Trash2 size={14} />
                       </button>
                     )}
@@ -180,6 +185,16 @@ const Materials = () => {
               </form>
             </div>
           </div>
+        )}
+        {confirmModal.isOpen && (
+          <ConfirmModal
+            isOpen={confirmModal.isOpen}
+            onClose={() => setConfirmModal({ isOpen: false, materialId: null })}
+            onConfirm={handleConfirmDelete}
+            title="Delete Material"
+            message="Are you sure you want to delete this learning material?"
+            confirmText="Delete Material"
+          />
         )}
       </main>
     </div>

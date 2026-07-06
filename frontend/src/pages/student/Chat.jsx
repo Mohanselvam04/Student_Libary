@@ -6,7 +6,7 @@ import { useAuth } from '../../context/AuthContext';
 import { Send, Bot, MessageSquare, User, Search, Sparkles } from 'lucide-react';
 import toast from 'react-hot-toast';
 
-const socket = io('http://localhost:5000');
+const socket = io(process.env.REACT_APP_SOCKET_URL || 'http://localhost:8001');
 
 const Chat = () => {
   const { user } = useAuth();

@@ -4,10 +4,11 @@ package-lock.json
 yarn.lock
 pnpm-lock.yaml
 
-# Environment files
+# Environment files (sensitive API keys)
 .env
 .env.local
-.env.*.local
+.env.*
+!.env.example
 
 # Build output
 build/

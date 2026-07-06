@@ -3,6 +3,8 @@ import axios from 'axios';
 import Sidebar from '../../components/layout/Sidebar';
 import { Users, BookOpen, FileText, GraduationCap, TrendingUp, UserCheck, ToggleLeft, ToggleRight, Trash2 } from 'lucide-react';
 import toast from 'react-hot-toast';
+import { useLocation, useNavigate } from 'react-router-dom';
+import ConfirmModal from '../../components/common/ConfirmModal';
 
 const AdminDashboard = () => {
   const [stats, setStats] = useState({});
@@ -10,6 +12,9 @@ const AdminDashboard = () => {
   const [courses, setCourses] = useState([]);
   const [activeTab, setActiveTab] = useState('overview');
   const [loading, setLoading] = useState(true);
+  const [confirmModal, setConfirmModal] = useState({ isOpen: false, userId: null });
+  const location = useLocation();
+  const navigate = useNavigate();
 
   useEffect(() => {
     Promise.all([
@@ -24,6 +29,14 @@ const AdminDashboard = () => {
     .finally(() => setLoading(false));
   }, []);
 
+  // Sync active tab with the current URL path
+  useEffect(() => {
+    const p = location.pathname.toLowerCase();
+    if (p.startsWith('/admin/users')) setActiveTab('users');
+    else if (p.startsWith('/admin/courses')) setActiveTab('courses');
+    else setActiveTab('overview');
+  }, [location.pathname]);
+
   const handleUpdateUser = async (id, updates) => {
     try {
       const res = await axios.put(`/api/admin/users/${id}`, updates);
@@ -32,8 +45,9 @@ const AdminDashboard = () => {
     } catch { toast.error('Update failed'); }
   };
 
-  const handleDeleteUser = async (id) => {
-    if (!window.confirm('Delete this user permanently?')) return;
+  const handleConfirmDeleteUser = async () => {
+    const id = confirmModal.userId;
+    if (!id) return;
     try {
       await axios.delete(`/api/admin/users/${id}`);
       setUsers(u => u.filter(x => x._id !== id));
@@ -69,9 +83,34 @@ const AdminDashboard = () => {
         </div>
 
         {/* Tabs */}
+        {/* <div className="tabs" style={{ maxWidth: 400, marginBottom: 28 }}>
+          {['overview', 'users', 'courses'].map(t => (
+            <button
+              key={t}
+              className={`tab ${activeTab === t ? 'active' : ''}`}
+              onClick={() => {
+                // update both UI state and URL so Sidebar and deep links stay in sync
+                setActiveTab(t);
+                navigate(`/admin${t === 'overview' ? '' : `/${t}`}`);
+              }}
+              style={{ textTransform: 'capitalize' }}
+            >{t}</button>
+          ))}
+        </div> */}
+
+           {/* Tabs */}
         <div className="tabs" style={{ maxWidth: 400, marginBottom: 28 }}>
           {['overview', 'users', 'courses'].map(t => (
-            <button key={t} className={`tab ${activeTab === t ? 'active' : ''}`} onClick={() => setActiveTab(t)} style={{ textTransform: 'capitalize' }}>{t}</button>
+            <button
+              key={t}
+              className={`tab ${activeTab === t ? 'active' : ''}`}
+              onClick={() => {
+                // update both UI state and URL so Sidebar and deep links stay in sync
+                setActiveTab(t);
+                navigate(`/admin${t === 'overview' ? '' : `/${t}`}`);
+              }}
+              style={{ textTransform: 'capitalize' }}
+            >{t}</button>
           ))}
         </div>
 
@@ -159,7 +198,7 @@ const AdminDashboard = () => {
                           <button className="btn btn-outline btn-sm" onClick={() => handleUpdateUser(u._id, { isActive: !u.isActive })}>
                             {u.isActive ? <ToggleRight size={14} /> : <ToggleLeft size={14} />}
                           </button>
-                          <button className="btn btn-danger btn-sm" onClick={() => handleDeleteUser(u._id)}><Trash2 size={14} /></button>
+                          <button className="btn btn-danger btn-sm" onClick={() => setConfirmModal({ isOpen: true, userId: u._id })}><Trash2 size={14} /></button>
                         </div>
                       </td>
                     </tr>
@@ -198,6 +237,14 @@ const AdminDashboard = () => {
             </div>
           </div>
         )}
+        <ConfirmModal
+          isOpen={confirmModal.isOpen}
+          onClose={() => setConfirmModal({ isOpen: false, userId: null })}
+          onConfirm={handleConfirmDeleteUser}
+          title="Delete User"
+          message="Are you sure you want to delete this user permanently? This action cannot be undone."
+          confirmText="Delete permanently"
+        />
       </main>
     </div>
   );
