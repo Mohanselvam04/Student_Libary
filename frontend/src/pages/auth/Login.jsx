@@ -9,8 +9,13 @@ const Login = () => {
   const [form, setForm] = useState({ email: '', password: '' });
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
-  const { login } = useAuth();
+  const { login, resetPassword } = useAuth();
   const navigate = useNavigate();
+
+  // Forgot password state
+  const [showForgotModal, setShowForgotModal] = useState(false);
+  const [forgotEmail, setForgotEmail] = useState('');
+  const [forgotLoading, setForgotLoading] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -21,9 +26,27 @@ const Login = () => {
       toast.success(`Welcome back, ${user.name}!`);
       navigate(redirectRes.data.redirectTo || (user.role === 'admin' ? '/admin' : '/dashboard'));
     } catch (err) {
-      toast.error(err.response?.data?.message || 'Login failed');
+      toast.error(err.response?.data?.message || err.message || 'Login failed');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleForgotPasswordSubmit = async (e) => {
+    e.preventDefault();
+    if (!forgotEmail.toLowerCase().trim().endsWith('@gmail.com')) {
+      return toast.error('Email must be a valid @gmail.com address');
+    }
+    setForgotLoading(true);
+    try {
+      await resetPassword(forgotEmail);
+      toast.success('Password reset email sent! Check your inbox.');
+      setShowForgotModal(false);
+      setForgotEmail('');
+    } catch (err) {
+      toast.error(err.message || 'Failed to send reset email');
+    } finally {
+      setForgotLoading(false);
     }
   };
 
@@ -69,7 +92,7 @@ const Login = () => {
               </div>
             </div>
 
-            <div className="form-group">
+            <div className="form-group" style={{ marginBottom: 12 }}>
               <label htmlFor="password">Password</label>
               <div style={{ position: 'relative' }}>
                 <Lock size={16} style={{ position: 'absolute', left: 14, top: '50%', transform: 'translateY(-50%)', color: 'var(--text-faint)' }} />
@@ -81,6 +104,13 @@ const Login = () => {
                   {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
                 </button>
               </div>
+            </div>
+
+            {/* Forgot Password Link */}
+            <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: -4, marginBottom: 20 }}>
+              <button type="button" onClick={() => setShowForgotModal(true)} style={{ background: 'none', border: 'none', color: 'var(--primary-light)', fontSize: 13, fontWeight: 500, cursor: 'pointer', padding: 0 }}>
+                Forgot Password?
+              </button>
             </div>
 
             <button type="submit" className="btn btn-primary" style={{ width: '100%', justifyContent: 'center', padding: '14px', fontSize: 15, marginTop: 8 }} disabled={loading}>
@@ -96,6 +126,43 @@ const Login = () => {
         </div>
       </div>
 
+      {/* Forgot Password Modal */}
+      {showForgotModal && (
+        <div className="modal-overlay" onClick={() => setShowForgotModal(false)}>
+          <div className="modal" onClick={e => e.stopPropagation()} style={{ maxWidth: 400, padding: 28 }}>
+            <h3 style={{ fontSize: 20, fontWeight: 700, marginBottom: 8 }}>Reset Password</h3>
+            <p style={{ color: 'var(--text-muted)', fontSize: 13, marginBottom: 20 }}>
+              Enter your registered email address and we'll send you a recovery link.
+            </p>
+            <form onSubmit={handleForgotPasswordSubmit}>
+              <div className="form-group" style={{ marginBottom: 20 }}>
+                <label htmlFor="forgot-email">Email Address</label>
+                <div style={{ position: 'relative' }}>
+                  <Mail size={16} style={{ position: 'absolute', left: 14, top: '50%', transform: 'translateY(-50%)', color: 'var(--text-faint)' }} />
+                  <input 
+                    id="forgot-email" 
+                    type="email" 
+                    placeholder="you@gmail.com" 
+                    value={forgotEmail}
+                    onChange={e => setForgotEmail(e.target.value)}
+                    style={{ paddingLeft: 42 }} 
+                    required 
+                  />
+                </div>
+              </div>
+              <div style={{ display: 'flex', gap: 12, justifyContent: 'flex-end' }}>
+                <button type="button" className="btn btn-outline" onClick={() => setShowForgotModal(false)} style={{ padding: '10px 18px', fontSize: 14 }}>
+                  Cancel
+                </button>
+                <button type="submit" className="btn btn-primary" style={{ padding: '10px 18px', fontSize: 14 }} disabled={forgotLoading}>
+                  {forgotLoading ? 'Sending...' : 'Send Link'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
       <style>{`
         @media (max-width: 768px) { .auth-left { display: none; } }
       `}</style>
@@ -104,3 +171,4 @@ const Login = () => {
 };
 
 export default Login;
+

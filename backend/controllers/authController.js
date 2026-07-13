@@ -109,4 +109,78 @@ async function me(req, res) {
   }
 }
 
-module.exports = { register, login, redirect, me };
+async function verifyFirebaseToken(idToken) {
+  const apiKey = process.env.FIREBASE_API_KEY || 'AIzaSyBfxXLZ27h-bTm_KbBJV6lD7MpIYkMWRf4';
+  const url = `https://identitytoolkit.googleapis.com/v1/accounts:lookup?key=${apiKey}`;
+  const response = await fetch(url, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ idToken }),
+  });
+  if (!response.ok) {
+    const errorData = await response.json();
+    throw new Error(errorData.error?.message || 'Failed to verify Firebase token');
+  }
+  const data = await response.json();
+  if (!data.users || data.users.length === 0) {
+    throw new Error('No user found for this token');
+  }
+  return data.users[0]; // Returns { localId, email, emailVerified, ... }
+}
+
+async function firebaseLogin(req, res) {
+  try {
+    const { idToken } = req.body;
+    if (!idToken) return res.status(400).json({ message: 'Firebase idToken required' });
+
+    const firebaseUser = await verifyFirebaseToken(idToken);
+    const email = firebaseUser.email;
+
+    const found = await findUserByEmail(email);
+    if (!found) {
+      return res.status(404).json({ message: 'User not registered in local database. Please create an account.' });
+    }
+
+    const { user } = found;
+    const token = jwt.sign({ id: user.id, role: user.role }, JWT_SECRET, { expiresIn: TOKEN_EXPIRES });
+    return res.status(200).json({ user: user.toJSON(), token });
+  } catch (err) {
+    console.error('Firebase Login error:', err);
+    return res.status(400).json({ message: err.message || 'Firebase login failed' });
+  }
+}
+
+async function firebaseRegister(req, res) {
+  try {
+    const { idToken, name, role } = req.body;
+    if (!idToken || !name) return res.status(400).json({ message: 'idToken and name are required' });
+
+    const firebaseUser = await verifyFirebaseToken(idToken);
+    const email = firebaseUser.email;
+    if (!validateEmail(email)) return res.status(400).json({ message: 'Email must be a valid @gmail.com address' });
+
+    const existing = await findUserByEmail(email);
+    if (existing) return res.status(400).json({ message: 'User already exists in local database' });
+
+    const selectedRole = ['admin', 'instructor', 'student'].includes(String(role || 'student').trim().toLowerCase())
+      ? String(role || 'student').trim().toLowerCase()
+      : 'student';
+    let Model = User;
+    if (selectedRole === 'admin') Model = Admin;
+    else if (selectedRole === 'instructor') Model = Instructor;
+
+    // Generate random secure password for MongoDB since user will log in via Firebase
+    const randomPassword = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+
+    const user = await Model.create({ name, email: email.toLowerCase().trim(), password: randomPassword, role: selectedRole });
+    const token = jwt.sign({ id: user.id, role: user.role }, JWT_SECRET, { expiresIn: TOKEN_EXPIRES });
+
+    return res.status(201).json({ user: user.toJSON(), token });
+  } catch (err) {
+    console.error('Firebase Register error:', err);
+    return res.status(400).json({ message: err.message || 'Firebase registration failed' });
+  }
+}
+
+module.exports = { register, login, redirect, me, firebaseLogin, firebaseRegister };
+
