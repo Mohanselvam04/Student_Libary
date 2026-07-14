@@ -9,6 +9,7 @@
     "seed:users": "node scripts/seedUsers.js"
   },
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.1079.0",
     "@supabase/supabase-js": "^2.108.2",
     "bcryptjs": "^2.4.3",
     "cors": "^2.8.5",
