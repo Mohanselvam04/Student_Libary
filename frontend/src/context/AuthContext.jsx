@@ -31,15 +31,30 @@ export const AuthProvider = ({ children }) => {
   }, []);
 
   const login = async (email, password) => {
-    const userCredential = await signInWithEmailAndPassword(auth, email, password);
-    const idToken = await userCredential.user.getIdToken();
-    const res = await axios.post('/api/auth/firebase-login', { idToken });
-    const { user: backendUser, token } = res.data;
-    
-    localStorage.setItem('lms_token', token);
-    axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-    setUser(backendUser);
-    return backendUser;
+    try {
+      const userCredential = await signInWithEmailAndPassword(auth, email, password);
+      const idToken = await userCredential.user.getIdToken();
+      const res = await axios.post('/api/auth/firebase-login', { idToken });
+      const { user: backendUser, token } = res.data;
+      
+      localStorage.setItem('lms_token', token);
+      axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+      setUser(backendUser);
+      return backendUser;
+    } catch (firebaseErr) {
+      console.warn('Firebase login failed, attempting local login fallback...', firebaseErr.message);
+      try {
+        const res = await axios.post('/api/auth/login', { email, password });
+        const { user: backendUser, token } = res.data;
+        
+        localStorage.setItem('lms_token', token);
+        axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+        setUser(backendUser);
+        return backendUser;
+      } catch (localErr) {
+        throw new Error(localErr.response?.data?.message || localErr.message || firebaseErr.message);
+      }
+    }
   };
 
   const register = async (data) => {
