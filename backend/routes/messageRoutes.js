@@ -9,3 +9,5 @@ router.get('/:userId', protect, getMessages);
 router.post('/', protect, sendMessage);
 
 module.exports = router;
+
+

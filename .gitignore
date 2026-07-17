@@ -1,0 +1,42 @@
+.DS_Store
+Thumbs.db
+ehthumbs.db
+Icon\r
+
+# Node.js
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+
+# Environment files (sensitive API keys)
+.env
+.env.local
+.env.*
+!.env.example
+
+# Build output
+build/
+dist/
+
+# Logs
+logs
+*.log
+
+# Uploaded files
+uploads/
+
+# IDE files
+.vscode/
+.idea/
+
+# Misc
+coverage/
+
+#docker
+docker-compose.override.yml
+docker/
