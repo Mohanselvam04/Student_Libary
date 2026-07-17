@@ -5,17 +5,11 @@
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
-<<<<<<< Updated upstream
-    "dev": "nodemon server.js",
+    "dev": "node kill-port.js && nodemon server.js",
     "seed:users": "node scripts/seedUsers.js"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.1079.0",
-=======
-    "dev": "nodemon server.js"
-  },
-  "dependencies": {
->>>>>>> Stashed changes
     "@supabase/supabase-js": "^2.108.2",
     "bcryptjs": "^2.4.3",
     "cors": "^2.8.5",

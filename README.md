@@ -106,16 +106,6 @@ Frontend runs at: **http://localhost:3000**
 
 ---
 
-## 🔑 Demo Accounts
-
-| Role       | Email                    | Password        |
-|------------|--------------------------|-----------------|
-| Admin      | admin@lms.com            | admin123        |
-| Instructor | instructor@lms.com       | instructor123   |
-| Student    | student@lms.com          | student123      |
-
----
-
 ## 🌐 API Endpoints
 
 | Method | URL                          | Description              | Auth       |

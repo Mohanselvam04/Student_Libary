@@ -4,10 +4,13 @@ package-lock.json
 yarn.lock
 pnpm-lock.yaml
 
-# Environment files
+# Environment files (sensitive API keys)
 .env
 .env.local
-.env.*.local
+.env.*
+!.env.example
+.env.example
+.gitignore
 
 # Logs
 npm-debug.log*
@@ -27,3 +30,5 @@ uploads/
 # OS files
 .DS_Store
 Thumbs.db
+
+.data/
