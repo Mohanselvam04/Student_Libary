@@ -3,7 +3,7 @@ const Course = require('../models/Course');
 const path = require('path');
 const fs = require('fs');
 const { PutObjectCommand } = require('@aws-sdk/client-s3');
-const r2Client = require('../config/s3Client');
+const r2Client = require('../configs/s3Client');
 
 // Upload material
 const uploadMaterial = async (req, res) => {
@@ -127,7 +127,7 @@ const deleteMaterial = async (req, res) => {
       if (matchIndex !== -1) {
         const r2Key = material.fileUrl.substring(matchIndex);
         const { DeleteObjectCommand } = require('@aws-sdk/client-s3');
-        const r2Client = require('../config/s3Client');
+        const r2Client = require('../configs/s3Client');
         
         r2Client.send(new DeleteObjectCommand({
           Bucket: process.env.R2_BUCKET_NAME || 'student-lib',

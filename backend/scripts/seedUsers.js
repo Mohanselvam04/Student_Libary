@@ -2,7 +2,7 @@ const path = require('path');
 const fs = require('fs');
 require('dotenv').config({ path: path.join(__dirname, '..', '.env') });
 
-const { connect } = require('../db');
+const { connect } = require('../configs/dbconnect');
 const User = require('../models/User');
 const Admin = require('../models/Admin');
 const Instructor = require('../models/Instructor');

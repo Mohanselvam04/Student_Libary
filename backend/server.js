@@ -11,7 +11,7 @@ const net = require('net');
 
 dotenv.config({ path: path.join(__dirname, '.env') });
 
-const { connect } = require('./db');
+const { connect } = require('./configs/dbconnect');
 
 const app = express();
 const server = http.createServer(app);

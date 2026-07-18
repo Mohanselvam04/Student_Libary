@@ -1,7 +1,7 @@
 const path = require('path');
 require('dotenv').config({ path: path.join(__dirname, '.env') });
 
-const { connect } = require('./db');
+const { connect } = require('./configs/dbconnect');
 const express = require('express');
 const app = express();
 

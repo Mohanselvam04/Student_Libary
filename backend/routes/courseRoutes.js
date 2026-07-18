@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const { getCourses, getCourse, createCourse, updateCourse, deleteCourse, enrollCourse, getMyCourses } = require('../controllers/courseController');
-const { protect, instructorOrAdmin } = require('../middleware/authMiddleware');
+const { protect, instructorOrAdmin } = require('../middlewares/authMiddleware');
 
 router.get('/', getCourses);
 router.get('/my', protect, getMyCourses);
