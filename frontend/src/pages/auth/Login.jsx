@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
-import axios from 'axios';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
+import { fetchRedirectUrl } from '../../services/authService';
 import { GraduationCap, Mail, Lock, Eye, EyeOff, ArrowRight } from 'lucide-react';
 import toast from 'react-hot-toast';
 
@@ -22,11 +22,11 @@ const Login = () => {
     setLoading(true);
     try {
       const user = await login(form.email, form.password);
-      const redirectRes = await axios.get('/api/auth/redirect');
+      const redirectRes = await fetchRedirectUrl();
       toast.success(`Welcome back, ${user.name}!`);
-      navigate(redirectRes.data.redirectTo || (user.role === 'admin' ? '/admin' : '/dashboard'));
+      navigate(redirectRes.redirectTo || (user.role === 'admin' ? '/admin' : '/dashboard'));
     } catch (err) {
-      toast.error(err.response?.data?.message || err.message || 'Login failed');
+      toast.error(err.message || 'Login failed');
     } finally {
       setLoading(false);
     }
@@ -55,21 +55,22 @@ const Login = () => {
       {/* Left Panel */}
       <div style={{
         flex: 1, background: 'linear-gradient(135deg, var(--primary-dark) 0%, var(--primary) 50%, var(--secondary) 100%)',
-        display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center',
+        display: 'flex', flexDirection: 'column', justifyContext: 'center', alignItems: 'center',
+        justifyContent: 'center',
         padding: 60, position: 'relative', overflow: 'hidden'
       }} className="auth-left">
-        <div style={{ position: 'absolute', inset: 0, opacity: 0.1, backgroundImage: 'radial-gradient(circle at 20% 80%, white 1px, transparent 1px), radial-gradient(circle at 80% 20%, white 1px, transparent 1px)', backgroundSize: '40px 40px' }} />
-        <div style={{ position: 'relative', textAlign: 'center', maxWidth: 360 }}>
-          <div style={{ width: 72, height: 72, background: 'rgba(255,255,255,0.2)', borderRadius: 20, display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 24px' }}>
+        <div style={{ position: 'absolute', inset: 0, opacity: 0.08, backgroundImage: 'radial-gradient(circle at 20% 80%, white 1px, transparent 1px), radial-gradient(circle at 80% 20%, white 1px, transparent 1px)', backgroundSize: '40px 40px' }} />
+        <div style={{ position: 'relative', textAlign: 'center', maxWidth: 380 }}>
+          <div style={{ width: 72, height: 72, background: 'rgba(255,255,255,0.15)', borderRadius: 22, display: 'flex', alignItems: 'center', justifyContext: 'center', justifyContent: 'center', margin: '0 auto 24px', border: '1px solid rgba(255,255,255,0.2)' }}>
             <GraduationCap size={36} color="white" />
           </div>
-          <h1 style={{ fontSize: 36, fontWeight: 800, color: 'white', marginBottom: 16 }}>LearnHub LMS</h1>
-          <p style={{ color: 'rgba(255,255,255,0.8)', fontSize: 16, lineHeight: 1.7 }}>
-            Your complete learning management platform. Access courses, materials, and AI-powered tutoring.
+          <h1 style={{ fontSize: 34, fontWeight: 800, color: 'white', marginBottom: 16, fontFamily: 'Syne, sans-serif' }}>LearnHub LMS</h1>
+          <p style={{ color: 'rgba(255,255,255,0.85)', fontSize: 15, lineHeight: 1.7, fontWeight: 300 }}>
+            Your complete learning management platform. Access courses, study materials, and AI-powered tutoring.
           </p>
-          <div style={{ display: 'flex', gap: 16, marginTop: 40, justifyContent: 'center', flexWrap: 'wrap' }}>
+          <div style={{ display: 'flex', gap: 12, marginTop: 40, justifyContent: 'center', flexWrap: 'wrap' }}>
             {['500+ Courses', 'AI Tutor', 'Real-time Chat'].map(f => (
-              <div key={f} style={{ background: 'rgba(255,255,255,0.15)', borderRadius: 8, padding: '6px 14px', color: 'white', fontSize: 13, fontWeight: 600 }}>{f}</div>
+              <div key={f} style={{ background: 'rgba(255,255,255,0.12)', border: '1px solid rgba(255,255,255,0.15)', borderRadius: 8, padding: '6px 14px', color: 'white', fontSize: 12, fontWeight: 500 }}>{f}</div>
             ))}
           </div>
         </div>
@@ -77,9 +78,9 @@ const Login = () => {
 
       {/* Right Panel */}
       <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 40 }}>
-        <div style={{ width: '100%', maxWidth: 420 }}>
-          <h2 style={{ fontSize: 28, fontWeight: 700, marginBottom: 8 }}>Welcome back</h2>
-          <p style={{ color: 'var(--text-muted)', marginBottom: 32, fontSize: 14 }}>Sign in to continue learning</p>
+        <div className="card" style={{ width: '100%', maxWidth: 440, padding: 36 }}>
+          <h2 style={{ fontSize: 26, fontWeight: 700, marginBottom: 6, color: '#1e293b' }}>Welcome back</h2>
+          <p style={{ color: 'var(--text-muted)', marginBottom: 28, fontSize: 13.5, fontWeight: 300 }}>Sign in to continue learning</p>
 
           <form onSubmit={handleSubmit}>
             <div className="form-group">
@@ -107,18 +108,18 @@ const Login = () => {
             </div>
 
             {/* Forgot Password Link */}
-            <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: -4, marginBottom: 20 }}>
-              <button type="button" onClick={() => setShowForgotModal(true)} style={{ background: 'none', border: 'none', color: 'var(--primary-light)', fontSize: 13, fontWeight: 500, cursor: 'pointer', padding: 0 }}>
+            <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: -4, marginBottom: 24 }}>
+              <button type="button" onClick={() => setShowForgotModal(true)} style={{ background: 'none', border: 'none', color: 'var(--primary)', fontSize: 13, fontWeight: 500, cursor: 'pointer', padding: 0 }}>
                 Forgot Password?
               </button>
             </div>
 
-            <button type="submit" className="btn btn-primary" style={{ width: '100%', justifyContent: 'center', padding: '14px', fontSize: 15, marginTop: 8 }} disabled={loading}>
-              {loading ? 'Signing in...' : <><span>Sign In</span><ArrowRight size={18} /></>}
+            <button type="submit" className="btn btn-primary" style={{ width: '100%', justifyContent: 'center', padding: '12px', fontSize: 14 }} disabled={loading}>
+              {loading ? 'Signing in...' : <><span>Sign In</span><ArrowRight size={16} /></>}
             </button>
           </form>
 
-          <p style={{ textAlign: 'center', marginTop: 24, color: 'var(--text-muted)', fontSize: 14 }}>
+          <p style={{ textAlign: 'center', marginTop: 24, color: 'var(--text-muted)', fontSize: 13.5 }}>
             Don't have an account?{' '}
             <Link to="/register" style={{ color: 'var(--primary-light)', fontWeight: 600 }}>Create one</Link>
           </p>
@@ -130,7 +131,7 @@ const Login = () => {
       {showForgotModal && (
         <div className="modal-overlay" onClick={() => setShowForgotModal(false)}>
           <div className="modal" onClick={e => e.stopPropagation()} style={{ maxWidth: 400, padding: 28 }}>
-            <h3 style={{ fontSize: 20, fontWeight: 700, marginBottom: 8 }}>Reset Password</h3>
+            <h3 style={{ fontSize: 18, fontWeight: 700, marginBottom: 6 }}>Reset Password</h3>
             <p style={{ color: 'var(--text-muted)', fontSize: 13, marginBottom: 20 }}>
               Enter your registered email address and we'll send you a recovery link.
             </p>
@@ -151,10 +152,10 @@ const Login = () => {
                 </div>
               </div>
               <div style={{ display: 'flex', gap: 12, justifyContent: 'flex-end' }}>
-                <button type="button" className="btn btn-outline" onClick={() => setShowForgotModal(false)} style={{ padding: '10px 18px', fontSize: 14 }}>
+                <button type="button" className="btn btn-outline" onClick={() => setShowForgotModal(false)} style={{ padding: '10px 18px', fontSize: 13.5 }}>
                   Cancel
                 </button>
-                <button type="submit" className="btn btn-primary" style={{ padding: '10px 18px', fontSize: 14 }} disabled={forgotLoading}>
+                <button type="submit" className="btn btn-primary" style={{ padding: '10px 18px', fontSize: 13.5 }} disabled={forgotLoading}>
                   {forgotLoading ? 'Sending...' : 'Send Link'}
                 </button>
               </div>
@@ -171,4 +172,3 @@ const Login = () => {
 };
 
 export default Login;
-

@@ -10,7 +10,7 @@ import Dashboard from './pages/student/Dashboard';
 import Courses from './pages/student/Courses';
 import Materials from './pages/student/Materials';
 import Chat from './pages/student/Chat';
-import AdminPanel from './pages/admin/AdminPanel';
+import AdminDashboard from './pages/admin/AdminDashboard';
 
 import './styles/global.css';
 
@@ -38,9 +38,9 @@ function App() {
           <Route path="/chat" element={<ProtectedRoute><Chat /></ProtectedRoute>} />
 
           {/* Admin */}
-          <Route path="/admin" element={<ProtectedRoute roles={['admin']}><AdminPanel /></ProtectedRoute>} />
-          <Route path="/admin/users" element={<ProtectedRoute roles={['admin']}><AdminPanel /></ProtectedRoute>} />
-          <Route path="/admin/courses" element={<ProtectedRoute roles={['admin']}><AdminPanel /></ProtectedRoute>} />
+          <Route path="/admin" element={<ProtectedRoute roles={['admin']}><AdminDashboard /></ProtectedRoute>} />
+          <Route path="/admin/users" element={<ProtectedRoute roles={['admin']}><AdminDashboard /></ProtectedRoute>} />
+          <Route path="/admin/courses" element={<ProtectedRoute roles={['admin']}><AdminDashboard /></ProtectedRoute>} />
 
           {/* Redirect */}
           <Route path="/" element={<Navigate to="/login" replace />} />

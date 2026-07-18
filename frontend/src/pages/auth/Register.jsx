@@ -56,15 +56,15 @@ const Register = () => {
   };
 
   return (
-    <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--bg)', padding: 20 }}>
+    <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--bg)', padding: '40px 20px' }}>
       <div style={{ width: '100%', maxWidth: 480 }}>
         {/* Header */}
-        <div style={{ textAlign: 'center', marginBottom: 36 }}>
-          <div style={{ width: 56, height: 56, background: 'var(--primary)', borderRadius: 16, display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px' }}>
+        <div style={{ textAlign: 'center', marginBottom: 28 }}>
+          <div style={{ width: 58, height: 58, background: 'linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%)', borderRadius: 16, display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px', boxShadow: '0 4px 10px rgba(46,125,50,0.15)' }}>
             <GraduationCap size={28} color="white" />
           </div>
-          <h1 style={{ fontSize: 28, fontWeight: 800, marginBottom: 8 }}>Create Account</h1>
-          <p style={{ color: 'var(--text-muted)', fontSize: 14 }}>Join LearnHub and start learning today</p>
+          <h1 style={{ fontSize: 26, fontWeight: 700, marginBottom: 6, color: '#1e293b', fontFamily: 'Syne, sans-serif' }}>Create Account</h1>
+          <p style={{ color: 'var(--text-muted)', fontSize: 13.5, fontWeight: 300 }}>Join LearnHub and start learning today</p>
         </div>
 
         <div className="card" style={{ padding: 32 }}>
@@ -87,7 +87,7 @@ const Register = () => {
                   onChange={e => setForm({ ...form, email: e.target.value })}
                   style={{ paddingLeft: 42 }} required />
               </div>
-              <div style={{ marginTop: 8, fontSize: 12, color: 'var(--text-muted)' }}>
+              <div style={{ marginTop: 8, fontSize: 11, color: 'var(--text-muted)' }}>
                 Only Gmail addresses are accepted.
               </div>
             </div>
@@ -104,7 +104,7 @@ const Register = () => {
                   {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
                 </button>
               </div>
-              <div style={{ marginTop: 10, display: 'grid', gap: 6, fontSize: 12, color: 'var(--text-muted)' }}>
+              <div style={{ marginTop: 10, display: 'grid', gap: 6, fontSize: 11, color: 'var(--text-muted)' }}>
                 <div style={{ display: 'flex', gap: 6, alignItems: 'center', color: passwordChecks.length ? '#10b981' : 'var(--text-muted)' }}>
                   {passwordChecks.length ? <Check size={14} /> : <X size={14} />} At least 5 characters
                 </div>
@@ -123,24 +123,25 @@ const Register = () => {
               </div>
             </div>
 
-            <fieldset className="form-group" style={{ border: 'none', padding: 0, margin: 0 }}>
-              <legend style={{ marginBottom: 10, fontWeight: 600, color: 'var(--text-default)' }}>I am joining as</legend>
+            <fieldset className="form-group" style={{ border: 'none', padding: 0, margin: '0 0 24px 0' }}>
+              <legend style={{ marginBottom: 10, fontWeight: 500, fontSize: 13, color: 'var(--text-muted)' }}>I am joining as</legend>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 10 }}>
                 {['student', 'instructor', 'admin'].map((roleItem) => {
                   let icon = '🛡️';
                   if (roleItem === 'student') icon = '🎓';
                   else if (roleItem === 'instructor') icon = '👩‍🏫';
+                  const isSelected = form.role === roleItem;
                   return (
                     <button
                       key={roleItem}
                       type="button"
-                      aria-pressed={form.role === roleItem}
+                      aria-pressed={isSelected}
                       onClick={() => setForm({ ...form, role: roleItem })}
                       style={{
-                        padding: '12px', borderRadius: 10, border: `2px solid ${form.role === roleItem ? 'var(--primary)' : 'var(--border)'}`,
-                        background: form.role === roleItem ? 'rgba(79,70,229,0.15)' : 'var(--bg-card2)',
-                        color: form.role === roleItem ? 'var(--primary-light)' : 'var(--text-muted)',
-                        cursor: 'pointer', fontWeight: 600, fontSize: 14, textTransform: 'capitalize', transition: 'all 0.2s'
+                        padding: '10px', borderRadius: 8, border: `1.5px solid ${isSelected ? 'var(--primary)' : 'var(--border)'}`,
+                        background: isSelected ? 'rgba(46,125,50,0.08)' : 'transparent',
+                        color: isSelected ? 'var(--primary)' : 'var(--text-muted)',
+                        cursor: 'pointer', fontWeight: 600, fontSize: 13, textTransform: 'capitalize', transition: 'all 0.2s'
                       }}
                     >
                       {icon} {roleItem}
@@ -150,12 +151,12 @@ const Register = () => {
               </div>
             </fieldset>
 
-            <button type="submit" className="btn btn-primary" style={{ width: '100%', justifyContent: 'center', padding: '14px', fontSize: 15 }} disabled={loading}>
-              {loading ? 'Creating account...' : <><span>Create Account</span><ArrowRight size={18} /></>}
+            <button type="submit" className="btn btn-primary" style={{ width: '100%', justifyContent: 'center', padding: '12px', fontSize: 14 }} disabled={loading}>
+              {loading ? 'Creating account...' : <><span>Create Account</span><ArrowRight size={16} /></>}
             </button>
           </form>
 
-          <p style={{ textAlign: 'center', marginTop: 20, color: 'var(--text-muted)', fontSize: 14 }}>
+          <p style={{ textAlign: 'center', marginTop: 24, color: 'var(--text-muted)', fontSize: 13.5 }}>
             Already have an account?{' '}
             <Link to="/login" style={{ color: 'var(--primary-light)', fontWeight: 600 }}>Sign in</Link>
           </p>

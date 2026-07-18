@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
-import axios from 'axios';
 import Sidebar from '../../components/layout/Sidebar';
-import { Search, BookOpen, Users, Star, Filter } from 'lucide-react';
+import { fetchCourses, enrollInCourse, createCourse } from '../../services/courseService';
+import { Search, BookOpen, Users, Star } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { useAuth } from '../../context/AuthContext';
 
@@ -19,15 +19,15 @@ const Courses = () => {
   const [showModal, setShowModal] = useState(false);
   const [newCourse, setNewCourse] = useState({ title: '', description: '', category: 'Programming', level: 'Beginner', duration: '' });
 
-  const fetchCourses = async () => {
+  const getCoursesList = async () => {
     setLoading(true);
     try {
       const params = {};
       if (search) params.search = search;
       if (category !== 'All') params.category = category;
       if (level !== 'All') params.level = level;
-      const res = await axios.get('/api/courses', { params });
-      setCourses(res.data);
+      const data = await fetchCourses(params);
+      setCourses(data || []);
     } catch {
       toast.error('Failed to load courses');
     } finally {
@@ -35,14 +35,14 @@ const Courses = () => {
     }
   };
 
-  useEffect(() => { fetchCourses(); }, [search, category, level]);
+  useEffect(() => { getCoursesList(); }, [search, category, level]);
 
   const handleEnroll = async (courseId) => {
     setEnrolling(courseId);
     try {
-      await axios.post(`/api/courses/${courseId}/enroll`);
+      await enrollInCourse(courseId);
       toast.success('Enrolled successfully!');
-      fetchCourses();
+      getCoursesList();
     } catch (err) {
       toast.error(err.response?.data?.message || 'Enrollment failed');
     } finally {
@@ -53,10 +53,10 @@ const Courses = () => {
   const handleCreate = async (e) => {
     e.preventDefault();
     try {
-      await axios.post('/api/courses', { ...newCourse, isPublished: true });
+      await createCourse({ ...newCourse, isPublished: true });
       toast.success('Course created!');
       setShowModal(false);
-      fetchCourses();
+      getCoursesList();
     } catch (err) {
       toast.error(err.response?.data?.message || 'Failed to create course');
     }
@@ -97,31 +97,31 @@ const Courses = () => {
         {loading ? <div className="loading"><BookOpen size={20} /> Loading courses...</div> :
           courses.length === 0 ? (
             <div className="empty-state">
-              <BookOpen size={60} />
-              <h3 style={{ marginTop: 16, fontSize: 18 }}>No courses found</h3>
-              <p style={{ fontSize: 14, marginTop: 8 }}>Try adjusting your filters</p>
+              <BookOpen size={50} color="var(--text-faint)" />
+              <h3 style={{ marginTop: 16, fontSize: 16, fontWeight: 700 }}>No courses found</h3>
+              <p style={{ fontSize: 13, marginTop: 4 }}>Try adjusting your filters</p>
             </div>
           ) : (
             <div className="grid-3">
               {courses.map(course => (
                 <div key={course._id} className="card" style={{ padding: 0, overflow: 'hidden' }}>
-                  <div style={{ height: 140, background: 'linear-gradient(135deg, var(--primary-dark), var(--secondary))', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                    <BookOpen size={48} color="rgba(255,255,255,0.4)" />
+                  <div style={{ height: 130, background: 'linear-gradient(135deg, var(--primary-dark), var(--secondary))', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <BookOpen size={44} color="rgba(255,255,255,0.3)" />
                   </div>
                   <div style={{ padding: 20 }}>
                     <div style={{ display: 'flex', gap: 6, marginBottom: 10, flexWrap: 'wrap' }}>
                       <span className="badge badge-primary">{course.category}</span>
                       <span className="badge badge-warning">{course.level}</span>
                     </div>
-                    <h3 style={{ fontSize: 15, fontWeight: 700, marginBottom: 8, lineHeight: 1.4 }}>{course.title}</h3>
-                    <p style={{ fontSize: 13, color: 'var(--text-muted)', marginBottom: 12, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>{course.description}</p>
+                    <h3 style={{ fontSize: 14.5, fontWeight: 700, marginBottom: 8, lineHeight: 1.4, color: '#1e293b' }}>{course.title}</h3>
+                    <p style={{ fontSize: 12.5, color: 'var(--text-muted)', marginBottom: 12, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden', height: 40 }}>{course.description}</p>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16, fontSize: 12, color: 'var(--text-muted)' }}>
                       <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}><Users size={13} /> {course.enrolledStudents?.length || 0}</span>
-                      <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}><Star size={13} /> {course.rating || '4.5'}</span>
+                      <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}><Star size={13} color="var(--accent)" fill="var(--accent)" /> {course.rating || '4.5'}</span>
                       {course.duration && <span>⏱ {course.duration}</span>}
                     </div>
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                      <div style={{ fontSize: 13, color: 'var(--text-muted)' }}>by <span style={{ color: 'var(--text)' }}>{course.instructor?.name}</span></div>
+                      <div style={{ fontSize: 12.5, color: 'var(--text-muted)' }}>by <span style={{ color: 'var(--text)', fontWeight: 500 }}>{course.instructor?.name}</span></div>
                       {user?.role === 'student' && (
                         <button className="btn btn-primary btn-sm" onClick={() => handleEnroll(course._id)} disabled={enrolling === course._id}>
                           {enrolling === course._id ? '...' : 'Enroll'}

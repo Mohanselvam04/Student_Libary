@@ -1,5 +1,4 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import axios from 'axios';
 import { 
   signInWithEmailAndPassword, 
   createUserWithEmailAndPassword, 
@@ -7,6 +6,7 @@ import {
   sendPasswordResetEmail
 } from 'firebase/auth';
 import { auth } from '../firebase';
+import { fetchUserProfile, localLogin, postFirebaseLogin, postFirebaseRegister } from '../services/authService';
 
 const AuthContext = createContext(null);
 
@@ -17,12 +17,10 @@ export const AuthProvider = ({ children }) => {
   useEffect(() => {
     const token = localStorage.getItem('lms_token');
     if (token) {
-      axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-      axios.get('/api/auth/me')
-        .then(res => setUser(res.data))
+      fetchUserProfile()
+        .then(userData => setUser(userData))
         .catch(() => { 
           localStorage.removeItem('lms_token'); 
-          delete axios.defaults.headers.common['Authorization']; 
         })
         .finally(() => setLoading(false));
     } else {
@@ -34,21 +32,19 @@ export const AuthProvider = ({ children }) => {
     try {
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
       const idToken = await userCredential.user.getIdToken();
-      const res = await axios.post('/api/auth/firebase-login', { idToken });
-      const { user: backendUser, token } = res.data;
+      const resData = await postFirebaseLogin(idToken);
+      const { user: backendUser, token } = resData;
       
       localStorage.setItem('lms_token', token);
-      axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
       setUser(backendUser);
       return backendUser;
     } catch (firebaseErr) {
       console.warn('Firebase login failed, attempting local login fallback...', firebaseErr.message);
       try {
-        const res = await axios.post('/api/auth/login', { email, password });
-        const { user: backendUser, token } = res.data;
+        const resData = await localLogin(email, password);
+        const { user: backendUser, token } = resData;
         
         localStorage.setItem('lms_token', token);
-        axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
         setUser(backendUser);
         return backendUser;
       } catch (localErr) {
@@ -61,11 +57,10 @@ export const AuthProvider = ({ children }) => {
     const { name, email, password, role } = data;
     const userCredential = await createUserWithEmailAndPassword(auth, email, password);
     const idToken = await userCredential.user.getIdToken();
-    const res = await axios.post('/api/auth/firebase-register', { idToken, name, role });
-    const { user: backendUser, token } = res.data;
+    const resData = await postFirebaseRegister(idToken, name, role);
+    const { user: backendUser, token } = resData;
 
     localStorage.setItem('lms_token', token);
-    axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
     setUser(backendUser);
     return backendUser;
   };
@@ -73,7 +68,6 @@ export const AuthProvider = ({ children }) => {
   const logout = async () => {
     await signOut(auth);
     localStorage.removeItem('lms_token');
-    delete axios.defaults.headers.common['Authorization'];
     setUser(null);
   };
 
@@ -89,4 +83,3 @@ export const AuthProvider = ({ children }) => {
 };
 
 export const useAuth = () => useContext(AuthContext);
-
