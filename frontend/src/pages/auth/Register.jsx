@@ -42,7 +42,7 @@ const Register = () => {
     setLoading(true);
     try {
       await register(form);
-      toast.success('Account created successfully!');
+      toast.success('Account created! A verification email has been sent to your Gmail (check Spam folder if not found).');
       if (form.role === 'admin') {
         navigate('/admin');
       } else {

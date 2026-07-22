@@ -3,7 +3,8 @@ import {
   signInWithEmailAndPassword, 
   createUserWithEmailAndPassword, 
   signOut,
-  sendPasswordResetEmail
+  sendPasswordResetEmail,
+  sendEmailVerification
 } from 'firebase/auth';
 import { auth } from '../firebase';
 import { fetchUserProfile, localLogin, postFirebaseLogin, postFirebaseRegister } from '../services/authService';
@@ -56,6 +57,11 @@ export const AuthProvider = ({ children }) => {
   const register = async (data) => {
     const { name, email, password, role } = data;
     const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+    try {
+      await sendEmailVerification(userCredential.user);
+    } catch (verifErr) {
+      console.warn('Failed to send verification email:', verifErr.message);
+    }
     const idToken = await userCredential.user.getIdToken();
     const resData = await postFirebaseRegister(idToken, name, role);
     const { user: backendUser, token } = resData;
@@ -75,8 +81,16 @@ export const AuthProvider = ({ children }) => {
     await sendPasswordResetEmail(auth, email);
   };
 
+  const resendVerification = async () => {
+    if (auth.currentUser) {
+      await sendEmailVerification(auth.currentUser);
+    } else {
+      throw new Error('No user is currently signed in to resend verification email.');
+    }
+  };
+
   return (
-    <AuthContext.Provider value={{ user, loading, login, register, logout, resetPassword }}>
+    <AuthContext.Provider value={{ user, loading, login, register, logout, resetPassword, resendVerification }}>
       {children}
     </AuthContext.Provider>
   );

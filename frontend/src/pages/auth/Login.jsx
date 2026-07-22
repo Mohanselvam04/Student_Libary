@@ -40,10 +40,11 @@ const Login = () => {
     setForgotLoading(true);
     try {
       await resetPassword(forgotEmail);
-      toast.success('Password reset email sent! Check your inbox.');
+      toast.success('Password reset email sent! Please check your Gmail inbox and Spam/Junk folder.');
       setShowForgotModal(false);
       setForgotEmail('');
     } catch (err) {
+      console.error('Firebase password reset error:', err);
       toast.error(err.message || 'Failed to send reset email');
     } finally {
       setForgotLoading(false);
