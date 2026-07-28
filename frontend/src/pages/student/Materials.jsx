@@ -6,7 +6,7 @@ import toast from 'react-hot-toast';
 import { useAuth } from '../../context/AuthContext';
 import ConfirmModal from '../../components/common/ConfirmModal';
 
-const TYPE_ICONS = { pdf: '📄', video: '🎬', image: '🖼️', doc: '📝', other: '📁' };
+const TYPE_ICONS = { pdf: '📄', video: '🎬', image: '🖼️', doc: '📝', ppt: '📊', other: '📁' };
 
 const Materials = () => {
   const { user } = useAuth();
@@ -101,7 +101,7 @@ const Materials = () => {
             <input placeholder="Search materials..." value={search} onChange={e => setSearch(e.target.value)} />
           </div>
           <div className="tabs" style={{ margin: 0, width: 'auto' }}>
-            {['all', 'pdf', 'video', 'doc', 'image', 'other'].map(t => (
+            {['all', 'pdf', 'video', 'doc', 'ppt', 'image', 'other'].map(t => (
               <button key={t} className={`tab ${typeFilter === t ? 'active' : ''}`} style={{ flex: 'none', padding: '6px 14px' }}
                 onClick={() => setTypeFilter(t)}>{t.toUpperCase()}</button>
             ))}
