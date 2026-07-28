@@ -3,7 +3,7 @@ import { NavLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import {
   LayoutDashboard, BookOpen, FileText, MessageSquare, Users,
-  LogOut, GraduationCap, BarChart3
+  LogOut, GraduationCap, BarChart3, Settings
 } from 'lucide-react';
 
 const Sidebar = () => {
@@ -21,6 +21,7 @@ const Sidebar = () => {
     { to: '/admin', icon: BarChart3, label: 'Overview' },
     { to: '/admin/users', icon: Users, label: 'Users' },
     { to: '/admin/courses', icon: BookOpen, label: 'Courses' },
+    { to: '/admin/settings', icon: Settings, label: 'Settings' },
     { to: '/materials', icon: FileText, label: 'Materials' },
     { to: '/chat', icon: MessageSquare, label: 'Messaging' },
   ];
