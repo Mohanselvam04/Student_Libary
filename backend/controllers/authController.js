@@ -5,6 +5,7 @@ require('dotenv').config({ path: path.join(__dirname, '..', '.env') });
 const User = require('../models/User');
 const Admin = require('../models/Admin');
 const Instructor = require('../models/Instructor');
+const SystemSetting = require('../models/SystemSetting');
 
 const JWT_SECRET = process.env.JWT_SECRET || 'dev_secret';
 const TOKEN_EXPIRES = '7d';
@@ -182,5 +183,213 @@ async function firebaseRegister(req, res) {
   }
 }
 
-module.exports = { register, login, redirect, me, firebaseLogin, firebaseRegister };
+async function getAdminCardVisibility(req, res) {
+  try {
+    const setting = await SystemSetting.findOne({ key: 'show_admin_card' });
+    const visible = setting ? setting.value : true;
+    return res.status(200).json({ visible });
+  } catch (err) {
+    console.error('getAdminCardVisibility error:', err);
+    return res.status(500).json({ message: 'Error retrieving setting' });
+  }
+}
+
+async function setAdminCardVisibility(req, res) {
+  try {
+    const { visible, email, password } = req.body;
+    if (visible === undefined) {
+      return res.status(400).json({ message: 'visible field is required' });
+    }
+
+    let isAuthorized = false;
+
+    // Check JWT token
+    const authHeader = req.headers.authorization;
+    if (authHeader && authHeader.startsWith('Bearer ')) {
+      try {
+        const token = authHeader.split(' ')[1];
+        const decoded = jwt.verify(token, JWT_SECRET);
+        if (decoded.role === 'admin') {
+          const adminUser = await Admin.findById(decoded.id);
+          if (adminUser) {
+            isAuthorized = true;
+          }
+        }
+      } catch (error) {
+        console.warn('Optional token verification failed:', error.message);
+      }
+    }
+
+    // Fallback to credentials check
+    if (!isAuthorized && email && password) {
+      const adminUser = await Admin.findOne({ email: email.toLowerCase().trim() });
+      if (adminUser) {
+        const match = await adminUser.comparePassword(password);
+        if (match) {
+          isAuthorized = true;
+        }
+      }
+    }
+
+    if (!isAuthorized) {
+      return res.status(401).json({ message: 'Unauthorized. Admin credentials required.' });
+    }
+
+    await SystemSetting.findOneAndUpdate(
+      { key: 'show_admin_card' },
+      { value: !!visible },
+      { upsert: true, new: true }
+    );
+
+    return res.status(200).json({ success: true, visible: !!visible });
+  } catch (err) {
+    console.error('setAdminCardVisibility error:', err);
+    return res.status(500).json({ message: 'Error updating setting' });
+  }
+}
+
+async function getInstructorCardVisibility(req, res) {
+  try {
+    const setting = await SystemSetting.findOne({ key: 'show_instructor_card' });
+    const visible = setting ? setting.value : true;
+    return res.status(200).json({ visible });
+  } catch (err) {
+    console.error('getInstructorCardVisibility error:', err);
+    return res.status(500).json({ message: 'Error retrieving setting' });
+  }
+}
+
+async function setInstructorCardVisibility(req, res) {
+  try {
+    const { visible, email, password } = req.body;
+    if (visible === undefined) {
+      return res.status(400).json({ message: 'visible field is required' });
+    }
+
+    let isAuthorized = false;
+
+    // Check JWT token
+    const authHeader = req.headers.authorization;
+    if (authHeader && authHeader.startsWith('Bearer ')) {
+      try {
+        const token = authHeader.split(' ')[1];
+        const decoded = jwt.verify(token, JWT_SECRET);
+        if (decoded.role === 'admin') {
+          const adminUser = await Admin.findById(decoded.id);
+          if (adminUser) {
+            isAuthorized = true;
+          }
+        }
+      } catch (error) {
+        console.warn('Optional token verification failed:', error.message);
+      }
+    }
+
+    // Fallback to credentials check
+    if (!isAuthorized && email && password) {
+      const adminUser = await Admin.findOne({ email: email.toLowerCase().trim() });
+      if (adminUser) {
+        const match = await adminUser.comparePassword(password);
+        if (match) {
+          isAuthorized = true;
+        }
+      }
+    }
+
+    if (!isAuthorized) {
+      return res.status(401).json({ message: 'Unauthorized. Admin credentials required.' });
+    }
+
+    await SystemSetting.findOneAndUpdate(
+      { key: 'show_instructor_card' },
+      { value: !!visible },
+      { upsert: true, new: true }
+    );
+
+    return res.status(200).json({ success: true, visible: !!visible });
+  } catch (err) {
+    console.error('setInstructorCardVisibility error:', err);
+    return res.status(500).json({ message: 'Error updating setting' });
+  }
+}
+
+async function getStudentCardVisibility(req, res) {
+  try {
+    const setting = await SystemSetting.findOne({ key: 'show_student_card' });
+    const visible = setting ? setting.value : true;
+    return res.status(200).json({ visible });
+  } catch (err) {
+    console.error('getStudentCardVisibility error:', err);
+    return res.status(500).json({ message: 'Error retrieving setting' });
+  }
+}
+
+async function setStudentCardVisibility(req, res) {
+  try {
+    const { visible, email, password } = req.body;
+    if (visible === undefined) {
+      return res.status(400).json({ message: 'visible field is required' });
+    }
+
+    let isAuthorized = false;
+
+    // Check JWT token
+    const authHeader = req.headers.authorization;
+    if (authHeader && authHeader.startsWith('Bearer ')) {
+      try {
+        const token = authHeader.split(' ')[1];
+        const decoded = jwt.verify(token, JWT_SECRET);
+        if (decoded.role === 'admin') {
+          const adminUser = await Admin.findById(decoded.id);
+          if (adminUser) {
+            isAuthorized = true;
+          }
+        }
+      } catch (error) {
+        console.warn('Optional token verification failed:', error.message);
+      }
+    }
+
+    // Fallback to credentials check
+    if (!isAuthorized && email && password) {
+      const adminUser = await Admin.findOne({ email: email.toLowerCase().trim() });
+      if (adminUser) {
+        const match = await adminUser.comparePassword(password);
+        if (match) {
+          isAuthorized = true;
+        }
+      }
+    }
+
+    if (!isAuthorized) {
+      return res.status(401).json({ message: 'Unauthorized. Admin credentials required.' });
+    }
+
+    await SystemSetting.findOneAndUpdate(
+      { key: 'show_student_card' },
+      { value: !!visible },
+      { upsert: true, new: true }
+    );
+
+    return res.status(200).json({ success: true, visible: !!visible });
+  } catch (err) {
+    console.error('setStudentCardVisibility error:', err);
+    return res.status(500).json({ message: 'Error updating setting' });
+  }
+}
+
+module.exports = {
+  register,
+  login,
+  redirect,
+  me,
+  firebaseLogin,
+  firebaseRegister,
+  getAdminCardVisibility,
+  setAdminCardVisibility,
+  getInstructorCardVisibility,
+  setInstructorCardVisibility,
+  getStudentCardVisibility,
+  setStudentCardVisibility
+};
 
