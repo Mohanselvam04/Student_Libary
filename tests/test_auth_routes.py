@@ -105,5 +105,105 @@ class TestAuthRoutes(unittest.TestCase):
         response = requests.get(self.redirect_url)
         self.assertEqual(response.status_code, 401)
 
+    def test_admin_card_visibility_flow(self):
+        """Test fetching and updating admin card visibility."""
+        visibility_url = f"{BASE_URL}/admin-card-visibility"
+        
+        # 1. Get default visibility (should be True)
+        res = requests.get(visibility_url)
+        self.assertEqual(res.status_code, 200)
+        self.assertTrue(res.json()["visible"])
+
+        # 2. Update without auth (should fail)
+        res = requests.post(visibility_url, json={"visible": False})
+        self.assertEqual(res.status_code, 401)
+
+        # 3. Update with invalid credentials (should fail)
+        res = requests.post(visibility_url, json={"visible": False, "email": "wrong@gmail.com", "password": "wrong"})
+        self.assertEqual(res.status_code, 401)
+
+        # 4. Update with valid admin credentials (should succeed)
+        res = requests.post(visibility_url, json={"visible": False, "email": self.admin_email, "password": self.password})
+        self.assertEqual(res.status_code, 200)
+        self.assertTrue(res.json()["success"])
+        self.assertFalse(res.json()["visible"])
+
+        # Check it updated globally
+        res = requests.get(visibility_url)
+        self.assertEqual(res.status_code, 200)
+        self.assertFalse(res.json()["visible"])
+
+        # 5. Update with admin JWT token (should succeed)
+        headers = {"Authorization": f"Bearer {self.admin_token}"}
+        res = requests.post(visibility_url, json={"visible": True}, headers=headers)
+        self.assertEqual(res.status_code, 200)
+        self.assertTrue(res.json()["success"])
+        self.assertTrue(res.json()["visible"])
+
+        # Check it reverted back to True
+        res = requests.get(visibility_url)
+        self.assertEqual(res.status_code, 200)
+        self.assertTrue(res.json()["visible"])
+
+        # 6. Test Instructor card visibility
+        inst_visibility_url = f"{BASE_URL}/instructor-card-visibility"
+        
+        # Get default (True)
+        res = requests.get(inst_visibility_url)
+        self.assertEqual(res.status_code, 200)
+        self.assertTrue(res.json()["visible"])
+
+        # Update without auth (should fail)
+        res = requests.post(inst_visibility_url, json={"visible": False})
+        self.assertEqual(res.status_code, 401)
+
+        # Update with valid admin credentials (should succeed)
+        res = requests.post(inst_visibility_url, json={"visible": False, "email": self.admin_email, "password": self.password})
+        self.assertEqual(res.status_code, 200)
+        self.assertTrue(res.json()["success"])
+        self.assertFalse(res.json()["visible"])
+
+        # Check it updated globally
+        res = requests.get(inst_visibility_url)
+        self.assertEqual(res.status_code, 200)
+        self.assertFalse(res.json()["visible"])
+
+        # Revert back with token (should succeed)
+        headers = {"Authorization": f"Bearer {self.admin_token}"}
+        res = requests.post(inst_visibility_url, json={"visible": True}, headers=headers)
+        self.assertEqual(res.status_code, 200)
+        self.assertTrue(res.json()["success"])
+        self.assertTrue(res.json()["visible"])
+
+        # 7. Test Student card visibility
+        stud_visibility_url = f"{BASE_URL}/student-card-visibility"
+        
+        # Get default (True)
+        res = requests.get(stud_visibility_url)
+        self.assertEqual(res.status_code, 200)
+        self.assertTrue(res.json()["visible"])
+
+        # Update without auth (should fail)
+        res = requests.post(stud_visibility_url, json={"visible": False})
+        self.assertEqual(res.status_code, 401)
+
+        # Update with valid admin credentials (should succeed)
+        res = requests.post(stud_visibility_url, json={"visible": False, "email": self.admin_email, "password": self.password})
+        self.assertEqual(res.status_code, 200)
+        self.assertTrue(res.json()["success"])
+        self.assertFalse(res.json()["visible"])
+
+        # Check it updated globally
+        res = requests.get(stud_visibility_url)
+        self.assertEqual(res.status_code, 200)
+        self.assertFalse(res.json()["visible"])
+
+        # Revert back with token (should succeed)
+        headers = {"Authorization": f"Bearer {self.admin_token}"}
+        res = requests.post(stud_visibility_url, json={"visible": True}, headers=headers)
+        self.assertEqual(res.status_code, 200)
+        self.assertTrue(res.json()["success"])
+        self.assertTrue(res.json()["visible"])
+
 if __name__ == "__main__":
     unittest.main()
