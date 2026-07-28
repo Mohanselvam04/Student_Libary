@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { GraduationCap, Mail, Lock, User, ArrowRight, Eye, EyeOff, Check, X } from 'lucide-react';
 import toast from 'react-hot-toast';
+import api from '../../services/api';
 
 const validateEmail = (email) => {
   if (!email) return false;
@@ -28,6 +29,44 @@ const Register = () => {
   const [loading, setLoading] = useState(false);
   const { register } = useAuth();
   const navigate = useNavigate();
+
+  // Card Visibility Management
+  const [adminCardVisible, setAdminCardVisible] = useState(true);
+  const [instructorCardVisible, setInstructorCardVisible] = useState(true);
+  const [studentCardVisible, setStudentCardVisible] = useState(true);
+
+  useEffect(() => {
+    const fetchVisibility = async () => {
+      try {
+        const [adminRes, instructorRes, studentRes] = await Promise.all([
+          api.get('/api/auth/admin-card-visibility'),
+          api.get('/api/auth/instructor-card-visibility'),
+          api.get('/api/auth/student-card-visibility')
+        ]);
+        setAdminCardVisible(adminRes.data.visible);
+        setInstructorCardVisible(instructorRes.data.visible);
+        setStudentCardVisible(studentRes.data.visible);
+        
+        let fallbackRole = form.role;
+        if (!adminRes.data.visible && fallbackRole === 'admin') {
+          fallbackRole = 'student';
+        }
+        if (!instructorRes.data.visible && fallbackRole === 'instructor') {
+          fallbackRole = 'student';
+        }
+        if (!studentRes.data.visible && fallbackRole === 'student') {
+          if (instructorRes.data.visible) fallbackRole = 'instructor';
+          else if (adminRes.data.visible) fallbackRole = 'admin';
+        }
+        if (fallbackRole !== form.role) {
+          setForm(prev => ({ ...prev, role: fallbackRole }));
+        }
+      } catch (err) {
+        console.error('Error fetching visibility settings:', err);
+      }
+    };
+    fetchVisibility();
+  }, []);
 
   const passwordChecks = validatePassword(form.password);
 
@@ -125,8 +164,22 @@ const Register = () => {
 
             <fieldset className="form-group" style={{ border: 'none', padding: 0, margin: '0 0 24px 0' }}>
               <legend style={{ marginBottom: 10, fontWeight: 500, fontSize: 13, color: 'var(--text-muted)' }}>I am joining as</legend>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 10 }}>
-                {['student', 'instructor', 'admin'].map((roleItem) => {
+              <div style={{
+                display: 'grid',
+                gridTemplateColumns: `repeat(${
+                  ['student', 'instructor', 'admin'].filter(role => 
+                    (role === 'student' && studentCardVisible) || 
+                    (role === 'admin' && adminCardVisible) || 
+                    (role === 'instructor' && instructorCardVisible)
+                  ).length
+                }, 1fr)`,
+                gap: 10
+              }}>
+                {['student', 'instructor', 'admin'].filter(role => 
+                  (role === 'student' && studentCardVisible) || 
+                  (role === 'admin' && adminCardVisible) || 
+                  (role === 'instructor' && instructorCardVisible)
+                ).map((roleItem) => {
                   let icon = '🛡️';
                   if (roleItem === 'student') icon = '🎓';
                   else if (roleItem === 'instructor') icon = '👩‍🏫';
