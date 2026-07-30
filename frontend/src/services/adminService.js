@@ -29,3 +29,33 @@ export const toggleCourseStatus = async (id) => {
   const res = await api.patch(`/api/admin/courses/${id}/toggle`);
   return res.data;
 };
+
+export const fetchAdminCardVisibility = async () => {
+  const res = await api.get('/api/auth/admin-card-visibility');
+  return res.data;
+};
+
+export const updateAdminCardVisibility = async (visible) => {
+  const res = await api.post('/api/auth/admin-card-visibility', { visible });
+  return res.data;
+};
+
+export const fetchInstructorCardVisibility = async () => {
+  const res = await api.get('/api/auth/instructor-card-visibility');
+  return res.data;
+};
+
+export const updateInstructorCardVisibility = async (visible) => {
+  const res = await api.post('/api/auth/instructor-card-visibility', { visible });
+  return res.data;
+};
+
+export const fetchStudentCardVisibility = async () => {
+  const res = await api.get('/api/auth/student-card-visibility');
+  return res.data;
+};
+
+export const updateStudentCardVisibility = async (visible) => {
+  const res = await api.post('/api/auth/student-card-visibility', { visible });
+  return res.data;
+};

@@ -112,7 +112,7 @@ const Dashboard = () => {
               ) : materials.map(mat => (
                 <div key={mat._id} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '12px 0', borderBottom: '1px solid var(--border)' }}>
                   <div style={{ width: 40, height: 40, background: 'var(--bg-card2)', borderRadius: 10, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, fontSize: 18 }}>
-                    {mat.type === 'pdf' ? '📄' : mat.type === 'video' ? '🎬' : mat.type === 'image' ? '🖼️' : '📁'}
+                    {mat.type === 'pdf' ? '📄' : mat.type === 'video' ? '🎬' : mat.type === 'image' ? '🖼️' : mat.type === 'doc' ? '📝' : mat.type === 'ppt' ? '📊' : '📁'}
                   </div>
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{ fontWeight: 600, fontSize: 13.5, color: '#1e293b', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{mat.title}</div>
