@@ -1,5 +1,7 @@
 const Course = require('../models/Course');
 const User = require('../models/User');
+const Admin = require('../models/Admin');
+const Instructor = require('../models/Instructor');
 
 // Get all published courses
 const getCourses = async (req, res) => {
@@ -32,8 +34,24 @@ const getCourse = async (req, res) => {
 // Create course
 const createCourse = async (req, res) => {
   try {
-    const course = await Course.create({ ...req.body, instructor: req.user._id });
-    await User.findByIdAndUpdate(req.user._id, { $push: { createdCourses: course._id } });
+    let instructorModel = 'User';
+    let Model = User;
+
+    if (req.user.role === 'admin') {
+      instructorModel = 'Admin';
+      Model = Admin;
+    } else if (req.user.role === 'instructor') {
+      instructorModel = 'Instructor';
+      Model = Instructor;
+    }
+
+    const course = await Course.create({
+      ...req.body,
+      instructor: req.user._id,
+      instructorModel
+    });
+
+    await Model.findByIdAndUpdate(req.user._id, { $push: { createdCourses: course._id } });
     res.status(201).json(course);
   } catch (err) {
     res.status(500).json({ message: err.message });
