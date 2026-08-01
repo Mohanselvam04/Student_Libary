@@ -9,6 +9,7 @@ const adminSchema = new mongoose.Schema({
   isActive: { type: Boolean, default: true },
   avatar: { type: String, default: '' },
   bio: { type: String, default: '' },
+  createdCourses: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Course' }],
 }, {
   timestamps: true,
   collection: 'admins',
