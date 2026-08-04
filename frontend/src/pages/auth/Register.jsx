@@ -163,7 +163,7 @@ const Register = () => {
             </div>
 
             <fieldset className="form-group" style={{ border: 'none', padding: 0, margin: '0 0 24px 0' }}>
-              <legend style={{ marginBottom: 10, fontWeight: 500, fontSize: 13, color: 'var(--text-muted)' }}>I am joining as</legend>
+              {/* <legend style={{ marginBottom: 10, fontWeight: 500, fontSize: 13, color: 'var(--text-muted)' }}>I am joining as</legend> */}
               <div style={{
                 display: 'grid',
                 gridTemplateColumns: `repeat(${
