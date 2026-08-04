@@ -91,11 +91,16 @@ const enrollCourse = async (req, res) => {
   try {
     const course = await Course.findById(req.params.id);
     if (!course) return res.status(404).json({ message: 'Course not found' });
-    if (course.enrolledStudents.includes(req.user._id))
+    if (course.enrolledStudents.some(id => id.toString() === req.user._id.toString()))
       return res.status(400).json({ message: 'Already enrolled' });
+    
+    let Model = User;
+    if (req.user.role === 'admin') Model = Admin;
+    else if (req.user.role === 'instructor') Model = Instructor;
+
     course.enrolledStudents.push(req.user._id);
     await course.save();
-    await User.findByIdAndUpdate(req.user._id, { $push: { enrolledCourses: course._id } });
+    await Model.findByIdAndUpdate(req.user._id, { $push: { enrolledCourses: course._id } });
     res.json({ message: 'Enrolled successfully', course });
   } catch (err) {
     res.status(500).json({ message: err.message });
@@ -105,12 +110,19 @@ const enrollCourse = async (req, res) => {
 // Get my courses (enrolled or created)
 const getMyCourses = async (req, res) => {
   try {
-    const user = await User.findById(req.user._id)
+    let Model = User;
+    if (req.user.role === 'admin') Model = Admin;
+    else if (req.user.role === 'instructor') Model = Instructor;
+
+    const user = await Model.findById(req.user._id)
       .populate({ path: 'enrolledCourses', populate: { path: 'instructor', select: 'name avatar' } })
       .populate({ path: 'createdCourses', populate: { path: 'instructor', select: 'name avatar' } });
+    
+    if (!user) return res.status(404).json({ message: 'User not found' });
+
     res.json({
-      enrolled: user.enrolledCourses,
-      created: user.createdCourses,
+      enrolled: user.enrolledCourses || [],
+      created: user.createdCourses || [],
     });
   } catch (err) {
     res.status(500).json({ message: err.message });
