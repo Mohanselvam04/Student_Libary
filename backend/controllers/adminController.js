@@ -30,9 +30,9 @@ const getStats = async (req, res) => {
 const getAllUsers = async (req, res) => {
   try {
     const [students, instructors, admins] = await Promise.all([
-      User.find().select('-password').lean(),
-      Instructor.find().select('-password').lean(),
-      Admin.find().select('-password').lean(),
+      User.find().select('-password').populate('enrolledCourses', 'title').lean(),
+      Instructor.find().select('-password').populate('enrolledCourses', 'title').lean(),
+      Admin.find().select('-password').populate('enrolledCourses', 'title').lean(),
     ]);
     
     const allUsers = [
@@ -140,4 +140,78 @@ const toggleCourse = async (req, res) => {
   }
 };
 
-module.exports = { getStats, getAllUsers, updateUser, deleteUser, getAllCourses, toggleCourse };
+// Enroll a user in a course (admin)
+const enrollUserInCourse = async (req, res) => {
+  try {
+    const { userId, courseId } = req.body;
+    if (!userId || !courseId) return res.status(400).json({ message: 'userId and courseId are required' });
+
+    const course = await Course.findById(courseId);
+    if (!course) return res.status(404).json({ message: 'Course not found' });
+
+    let user = await User.findById(userId);
+    let Model = User;
+    if (!user) {
+      user = await Instructor.findById(userId);
+      Model = Instructor;
+    }
+    if (!user) {
+      user = await Admin.findById(userId);
+      Model = Admin;
+    }
+    if (!user) return res.status(404).json({ message: 'User not found' });
+
+    // Prevent duplicates in course.enrolledStudents
+    if (!course.enrolledStudents.some(id => id.toString() === userId.toString())) {
+      course.enrolledStudents.push(userId);
+      await course.save();
+    }
+
+    // Prevent duplicates in user.enrolledCourses
+    if (!user.enrolledCourses.some(id => id.toString() === courseId.toString())) {
+      user.enrolledCourses.push(courseId);
+      await user.save();
+    }
+
+    res.json({ message: 'User enrolled successfully', course, user });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
+// Unenroll a user from a course (admin)
+const unenrollUserFromCourse = async (req, res) => {
+  try {
+    const { userId, courseId } = req.body;
+    if (!userId || !courseId) return res.status(400).json({ message: 'userId and courseId are required' });
+
+    const course = await Course.findById(courseId);
+    if (!course) return res.status(404).json({ message: 'Course not found' });
+
+    let user = await User.findById(userId);
+    let Model = User;
+    if (!user) {
+      user = await Instructor.findById(userId);
+      Model = Instructor;
+    }
+    if (!user) {
+      user = await Admin.findById(userId);
+      Model = Admin;
+    }
+    if (!user) return res.status(404).json({ message: 'User not found' });
+
+    // Remove from course
+    course.enrolledStudents = course.enrolledStudents.filter(id => id.toString() !== userId.toString());
+    await course.save();
+
+    // Remove from user
+    user.enrolledCourses = user.enrolledCourses.filter(id => id.toString() !== courseId.toString());
+    await user.save();
+
+    res.json({ message: 'User unenrolled successfully', course, user });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
+module.exports = { getStats, getAllUsers, updateUser, deleteUser, getAllCourses, toggleCourse, enrollUserInCourse, unenrollUserFromCourse };
