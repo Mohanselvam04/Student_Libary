@@ -10,6 +10,7 @@ const instructorSchema = new mongoose.Schema({
   avatar: { type: String, default: '' },
   bio: { type: String, default: '' },
   createdCourses: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Course' }],
+  enrolledCourses: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Course' }],
 }, {
   timestamps: true,
   collection: 'instructors',
