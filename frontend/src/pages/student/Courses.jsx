@@ -73,11 +73,12 @@ const Courses = () => {
             <h1 className="page-title">Courses</h1>
             <p className="page-subtitle">Explore and enroll in available courses</p>
           </div>
-          {isInstructor && (
+          {/* {isInstructor && (
             <button className="btn btn-primary" onClick={() => setShowModal(true)}>
-              + Create Course
+              Create Course
             </button>
-          )}
+          )
+          } */}
         </div>
 
         {/* Filters */}
@@ -122,11 +123,15 @@ const Courses = () => {
                     </div>
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                       <div style={{ fontSize: 12.5, color: 'var(--text-muted)' }}>by <span style={{ color: 'var(--text)', fontWeight: 500 }}>{course.instructor?.name}</span></div>
-                      {user?.role === 'student' && (
-                        <button className="btn btn-primary btn-sm" onClick={() => handleEnroll(course._id)} disabled={enrolling === course._id}>
-                          {enrolling === course._id ? '...' : 'Enroll'}
-                        </button>
-                      )}
+                      {user && (user.id || user._id) ? (
+                        course.enrolledStudents?.some(id => id && String(id) === String(user.id || user._id)) ? (
+                          <span className="badge badge-success" style={{ padding: '6px 12px', fontSize: '13px' }}>Enrolled</span>
+                        ) : (
+                          <button className="btn btn-primary btn-sm" onClick={() => handleEnroll(course._id)} disabled={enrolling === course._id}>
+                            {enrolling === course._id ? '...' : 'Enroll'}
+                          </button>
+                        )
+                      ) : null}
                     </div>
                   </div>
                 </div>
