@@ -59,3 +59,13 @@ export const updateStudentCardVisibility = async (visible) => {
   const res = await api.post('/api/auth/student-card-visibility', { visible });
   return res.data;
 };
+
+export const enrollUserInCourse = async (userId, courseId) => {
+  const res = await api.post('/api/admin/enroll', { userId, courseId });
+  return res.data;
+};
+
+export const unenrollUserFromCourse = async (userId, courseId) => {
+  const res = await api.post('/api/admin/unenroll', { userId, courseId });
+  return res.data;
+};
