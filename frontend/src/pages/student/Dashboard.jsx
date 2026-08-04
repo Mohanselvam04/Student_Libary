@@ -125,14 +125,14 @@ const Dashboard = () => {
         </div>
 
         {/* Quick Actions */}
-        <div className="card" style={{ marginTop: 24 }}>
+        {/* <div className="card" style={{ marginTop: 24 }}>
           <h3 style={{ fontSize: 15, fontWeight: 700, marginBottom: 16 }}>Quick Actions</h3>
           <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
             <Link to="/courses" className="btn btn-outline" style={{ fontSize: 13 }}><BookOpen size={15} /> Browse Courses</Link>
             <Link to="/materials" className="btn btn-outline" style={{ fontSize: 13 }}><FileText size={15} /> View Materials</Link>
             <Link to="/chat" className="btn btn-outline" style={{ fontSize: 13 }}><MessageSquare size={15} /> Open Chat</Link>
           </div>
-        </div>
+        </div> */}
       </main>
     </div>
   );
