@@ -45,8 +45,40 @@ const createCourse = async (req, res) => {
       Model = Instructor;
     }
 
+    let backgroundImage = req.body.backgroundImage || '';
+    if (req.file) {
+      if (process.env.R2_ACCESS_KEY_ID && process.env.R2_SECRET_ACCESS_KEY) {
+        try {
+          const r2Key = `courses/${Date.now()}-${req.file.originalname}`;
+          const { PutObjectCommand } = require('@aws-sdk/client-s3');
+          const r2Client = require('../configs/s3Client');
+          const fs = require('fs');
+          await r2Client.send(new PutObjectCommand({
+            Bucket: process.env.R2_BUCKET_NAME || 'student-lib',
+            Key: r2Key,
+            Body: fs.readFileSync(req.file.path),
+            ContentType: req.file.mimetype,
+          }));
+          fs.unlinkSync(req.file.path);
+          const publicUrl = process.env.R2_PUBLIC_URL || 'https://pub-yoursubdomain.r2.dev';
+          backgroundImage = `${publicUrl.replace(/\/$/, '')}/${r2Key}`;
+        } catch (err) {
+          console.error('R2 upload failed, falling back to local file:', err);
+          backgroundImage = `/uploads/${req.file.filename}`;
+        }
+      } else {
+        backgroundImage = `/uploads/${req.file.filename}`;
+      }
+    }
+
+    const isPublished = req.body.isPublished === 'true' || req.body.isPublished === true;
+    const price = req.body.price ? Number(req.body.price) : 0;
+
     const course = await Course.create({
       ...req.body,
+      isPublished,
+      price,
+      backgroundImage,
       instructor: req.user._id,
       instructorModel
     });
@@ -63,9 +95,47 @@ const updateCourse = async (req, res) => {
   try {
     const course = await Course.findById(req.params.id);
     if (!course) return res.status(404).json({ message: 'Course not found' });
-    if (course.instructor.toString() !== req.user._id.toString() && req.user.role !== 'admin')
+    if (req.user.role !== 'admin')
       return res.status(403).json({ message: 'Not authorized' });
-    const updated = await Course.findByIdAndUpdate(req.params.id, req.body, { new: true });
+
+    let backgroundImage = req.body.backgroundImage !== undefined ? req.body.backgroundImage : course.backgroundImage;
+    if (req.file) {
+      if (process.env.R2_ACCESS_KEY_ID && process.env.R2_SECRET_ACCESS_KEY) {
+        try {
+          const r2Key = `courses/${Date.now()}-${req.file.originalname}`;
+          const { PutObjectCommand } = require('@aws-sdk/client-s3');
+          const r2Client = require('../configs/s3Client');
+          const fs = require('fs');
+          await r2Client.send(new PutObjectCommand({
+            Bucket: process.env.R2_BUCKET_NAME || 'student-lib',
+            Key: r2Key,
+            Body: fs.readFileSync(req.file.path),
+            ContentType: req.file.mimetype,
+          }));
+          fs.unlinkSync(req.file.path);
+          const publicUrl = process.env.R2_PUBLIC_URL || 'https://pub-yoursubdomain.r2.dev';
+          backgroundImage = `${publicUrl.replace(/\/$/, '')}/${r2Key}`;
+        } catch (err) {
+          console.error('R2 upload failed, falling back to local file:', err);
+          backgroundImage = `/uploads/${req.file.filename}`;
+        }
+      } else {
+        backgroundImage = `/uploads/${req.file.filename}`;
+      }
+    }
+
+    const updateData = { ...req.body };
+    if (req.file || req.body.backgroundImage !== undefined) {
+      updateData.backgroundImage = backgroundImage;
+    }
+    if (updateData.isPublished !== undefined) {
+      updateData.isPublished = updateData.isPublished === 'true' || updateData.isPublished === true;
+    }
+    if (updateData.price !== undefined) {
+      updateData.price = Number(updateData.price || 0);
+    }
+
+    const updated = await Course.findByIdAndUpdate(req.params.id, updateData, { new: true });
     res.json(updated);
   } catch (err) {
     res.status(500).json({ message: err.message });
@@ -77,8 +147,36 @@ const deleteCourse = async (req, res) => {
   try {
     const course = await Course.findById(req.params.id);
     if (!course) return res.status(404).json({ message: 'Course not found' });
-    if (course.instructor.toString() !== req.user._id.toString() && req.user.role !== 'admin')
+    if (req.user.role !== 'admin')
       return res.status(403).json({ message: 'Not authorized' });
+
+    // Delete image if local or in R2
+    if (course.backgroundImage && course.backgroundImage.startsWith('/uploads/')) {
+      const fs = require('fs');
+      const path = require('path');
+      const filePath = path.join(__dirname, '../uploads', path.basename(course.backgroundImage));
+      if (fs.existsSync(filePath)) {
+        try {
+          fs.unlinkSync(filePath);
+        } catch (err) {
+          console.error('Failed to delete course image file:', err);
+        }
+      }
+    } else if (course.backgroundImage && course.backgroundImage.includes('courses/')) {
+      const matchIndex = course.backgroundImage.indexOf('courses/');
+      if (matchIndex !== -1) {
+        const r2Key = course.backgroundImage.substring(matchIndex);
+        const { DeleteObjectCommand } = require('@aws-sdk/client-s3');
+        const r2Client = require('../configs/s3Client');
+        r2Client.send(new DeleteObjectCommand({
+          Bucket: process.env.R2_BUCKET_NAME || 'student-lib',
+          Key: r2Key,
+        })).catch(err => {
+          console.error('Failed to delete course image from Cloudflare R2:', err);
+        });
+      }
+    }
+
     await course.deleteOne();
     res.json({ message: 'Course deleted' });
   } catch (err) {
