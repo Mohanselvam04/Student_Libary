@@ -18,7 +18,7 @@ import { ChevronDown, ChevronRight, ToggleLeft, ToggleRight } from 'lucide-react
 import toast from 'react-hot-toast';
 import { useLocation, useNavigate } from 'react-router-dom';
 import ConfirmModal from '../../components/common/ConfirmModal';
-import { createCourse } from '../../services/courseService';
+import { createCourse, updateCourse, deleteCourse } from '../../services/courseService';
 import AdminOverview from './components/AdminOverview';
 import AdminUsers from './components/AdminUsers';
 import AdminCourses from './components/AdminCourses';
@@ -148,6 +148,34 @@ const AdminDashboard = () => {
     }
   };
 
+  const handleUpdateCourse = async (id, courseData) => {
+    try {
+      await updateCourse(id, courseData);
+      toast.success('Course updated successfully!');
+      const coursesData = await fetchAllCourses();
+      setCourses(coursesData || []);
+      return true;
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Failed to update course');
+      return false;
+    }
+  };
+
+  const handleDeleteCourse = async (id) => {
+    try {
+      await deleteCourse(id);
+      toast.success('Course deleted successfully!');
+      const coursesData = await fetchAllCourses();
+      setCourses(coursesData || []);
+      const statsData = await fetchAdminStats();
+      setStats(statsData || {});
+      return true;
+    } catch (err) {
+      toast.error(err.response?.data?.message || 'Failed to delete course');
+      return false;
+    }
+  };
+
   const initials = (name) => name?.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2) || 'U';
 
   return (
@@ -191,6 +219,8 @@ const AdminDashboard = () => {
                 courses={courses}
                 handleToggleCourse={handleToggleCourse}
                 handleCreateCourse={handleCreateCourse}
+                handleUpdateCourse={handleUpdateCourse}
+                handleDeleteCourse={handleDeleteCourse}
               />
             )}
 
