@@ -8,6 +8,14 @@ import { useAuth } from '../../context/AuthContext';
 const CATEGORIES = ['All', 'Programming', 'Design', 'Business', 'Marketing', 'Data Science', 'Language'];
 const LEVELS = ['All', 'Beginner', 'Intermediate', 'Advanced'];
 
+const getCourseImageUrl = (url) => {
+  if (!url) return '';
+  if (url.startsWith('http://') || url.startsWith('https://') || url.startsWith('data:')) {
+    return url;
+  }
+  return `http://localhost:8001${url}`;
+};
+
 const Courses = () => {
   const { user } = useAuth();
   const [courses, setCourses] = useState([]);
@@ -106,8 +114,17 @@ const Courses = () => {
             <div className="grid-3">
               {courses.map(course => (
                 <div key={course._id} className="card" style={{ padding: 0, overflow: 'hidden' }}>
-                  <div style={{ height: 130, background: 'linear-gradient(135deg, var(--primary-dark), var(--secondary))', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                    <BookOpen size={44} color="rgba(255,255,255,0.3)" />
+                  <div style={{
+                    height: 130,
+                    background: course.backgroundImage
+                      ? `url(${getCourseImageUrl(course.backgroundImage)}) center/cover no-repeat`
+                      : 'linear-gradient(135deg, var(--primary-dark), var(--secondary))',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    position: 'relative'
+                  }}>
+                    {!course.backgroundImage && <BookOpen size={44} color="rgba(255,255,255,0.3)" />}
                   </div>
                   <div style={{ padding: 20 }}>
                     <div style={{ display: 'flex', gap: 6, marginBottom: 10, flexWrap: 'wrap' }}>
