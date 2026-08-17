@@ -11,6 +11,7 @@ const courseSchema = new mongoose.Schema({
   materials: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Material' }],
   enrolledStudents: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
   isPublished: { type: Boolean, default: false },
+  backgroundImage: { type: String, default: '' },
 }, {
   timestamps: true,
   toJSON: {
