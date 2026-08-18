@@ -1,20 +1,56 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import {
   LayoutDashboard, BookOpen, FileText, MessageSquare, Users,
-  LogOut, GraduationCap, BarChart3, Settings
+  LogOut, GraduationCap, BarChart3, Settings, Sparkles
 } from 'lucide-react';
+import { io } from 'socket.io-client';
+import api from '../../services/api';
+
+const socket = io(process.env.REACT_APP_SOCKET_URL || 'http://localhost:8001');
 
 const Sidebar = () => {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
+  const [unreadCount, setUnreadCount] = useState(0);
+
+  const fetchUnread = async () => {
+    try {
+      const res = await api.get('/api/messages/conversations');
+      const conversations = res.data || [];
+      const count = conversations.reduce((acc, c) => acc + (c.unread || 0), 0);
+      setUnreadCount(count);
+    } catch (err) {
+      console.error('Failed to fetch unread count:', err);
+    }
+  };
+
+  useEffect(() => {
+    if (!user) return;
+    fetchUnread();
+
+    socket.emit('join', user._id);
+    const handleNewMsg = () => {
+      fetchUnread();
+    };
+    socket.on('newMessage', handleNewMsg);
+    
+    // Periodically sync unread counts as fallback every 15 seconds
+    const interval = setInterval(fetchUnread, 15000);
+
+    return () => {
+      socket.off('newMessage', handleNewMsg);
+      clearInterval(interval);
+    };
+  }, [user]);
 
   const studentLinks = [
     { to: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
     { to: '/courses', icon: BookOpen, label: 'Courses' },
     { to: '/materials', icon: FileText, label: 'Materials' },
-    { to: '/chat', icon: MessageSquare, label: 'Chat & AI Tutor' },
+    { to: '/chat', icon: MessageSquare, label: 'Chat' },
+    { to: '/ai-tutor', icon: Sparkles, label: 'AI Tutor' },
   ];
 
   const adminLinks = [
@@ -111,7 +147,25 @@ const Sidebar = () => {
               })}
             >
               <Icon size={17} />
-              <span>{label}</span>
+              <span style={{ flex: 1 }}>{label}</span>
+              {to === '/chat' && unreadCount > 0 && (
+                <span style={{
+                  background: '#ef4444',
+                  color: 'white',
+                  borderRadius: '50%',
+                  minWidth: 18,
+                  height: 18,
+                  fontSize: 10,
+                  fontWeight: 700,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  lineHeight: 1,
+                  padding: '2px'
+                }}>
+                  {unreadCount}
+                </span>
+              )}
             </NavLink>
           ))}
         </div>
