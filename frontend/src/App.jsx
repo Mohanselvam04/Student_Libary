@@ -10,6 +10,7 @@ import Dashboard from './pages/student/Dashboard';
 import Courses from './pages/student/Courses';
 import Materials from './pages/student/Materials';
 import Chat from './pages/student/Chat';
+import AITutor from './pages/student/AITutor';
 import AdminDashboard from './pages/admin/AdminDashboard';
 
 import './styles/global.css';
@@ -36,6 +37,7 @@ function App() {
           <Route path="/courses" element={<ProtectedRoute><Courses /></ProtectedRoute>} />
           <Route path="/materials" element={<ProtectedRoute><Materials /></ProtectedRoute>} />
           <Route path="/chat" element={<ProtectedRoute><Chat /></ProtectedRoute>} />
+          <Route path="/ai-tutor" element={<ProtectedRoute><AITutor /></ProtectedRoute>} />
 
           {/* Admin */}
           <Route path="/admin" element={<ProtectedRoute roles={['admin']}><AdminDashboard /></ProtectedRoute>} />
