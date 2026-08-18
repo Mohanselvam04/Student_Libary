@@ -64,6 +64,11 @@ async function saveMessageAndSync(senderId, receiverId, content, conversationId)
     throw new Error('Students are only allowed to chat with other students');
   }
 
+  // Prevent messaging self
+  if (senderId.toString() === receiverId.toString()) {
+    throw new Error('You cannot send a message to yourself');
+  }
+
   // 2. Create message in MongoDB
   const message = await Message.create({
     sender: senderId,
