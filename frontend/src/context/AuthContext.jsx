@@ -56,12 +56,23 @@ export const AuthProvider = ({ children }) => {
 
   const register = async (data) => {
     const { name, email, password, role } = data;
-    const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+    let userCredential;
     try {
-      await sendEmailVerification(userCredential.user);
-    } catch (verifErr) {
-      console.warn('Failed to send verification email:', verifErr.message);
+      userCredential = await createUserWithEmailAndPassword(auth, email, password);
+      try {
+        await sendEmailVerification(userCredential.user);
+      } catch (verifErr) {
+        console.warn('Failed to send verification email:', verifErr.message);
+      }
+    } catch (firebaseErr) {
+      if (firebaseErr.code === 'auth/email-already-in-use') {
+        console.warn('Email already in use in Firebase, attempting to login and link with MongoDB...');
+        userCredential = await signInWithEmailAndPassword(auth, email, password);
+      } else {
+        throw firebaseErr;
+      }
     }
+    
     const idToken = await userCredential.user.getIdToken();
     const resData = await postFirebaseRegister(idToken, name, role);
     const { user: backendUser, token } = resData;
