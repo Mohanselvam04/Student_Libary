@@ -47,15 +47,9 @@ io.on('connection', (socket) => {
 
   socket.on('sendMessage', async (data) => {
     const { senderId, receiverId, content, conversationId } = data;
-    const Message = require('./models/Message');
+    const { saveMessageAndSync } = require('./utils/messageStore');
     try {
-      const message = await Message.create({
-        sender: senderId,
-        receiver: receiverId,
-        content,
-        conversationId,
-      });
-      await message.populate('sender', 'name avatar');
+      const message = await saveMessageAndSync(senderId, receiverId, content, conversationId);
       const receiverSocket = onlineUsers.get(receiverId);
       if (receiverSocket) {
         io.to(receiverSocket).emit('newMessage', message);
@@ -79,33 +73,10 @@ app.set('io', io);
 
 const START_PORT = parseInt(process.env.PORT, 10) || 5000;
 
-async function findFreePort(start) {
-  let port = start;
-  while (port < start + 1000) {
-    const isFree = await new Promise((resolve) => {
-      const tester = net.createServer()
-        .once('error', () => {
-          tester.close?.();
-          resolve(false);
-        })
-        .once('listening', () => {
-          tester.close(() => resolve(true));
-        })
-        .listen(port);
-    });
-    if (isFree) return port;
-    port += 1;
-  }
-  throw new Error('No free ports available');
-}
-
 (async () => {
   try {
     await connect();
-    const port = await findFreePort(START_PORT);
-    if (port !== START_PORT) {
-      console.warn(`Port ${START_PORT} in use — falling back to ${port}`);
-    }
+    const port = START_PORT;
     server.listen(port, () => {
       console.log(`🚀 Server running on port ${port}`);
     });
@@ -129,3 +100,4 @@ process.on('uncaughtException', (err) => {
 process.on('unhandledRejection', (reason) => {
   console.error('Unhandled Rejection:', reason);
 });
+// Nodemon trigger comment
