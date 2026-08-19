@@ -3,13 +3,15 @@ import { io } from 'socket.io-client';
 import Sidebar from '../../components/layout/Sidebar';
 import { useAuth } from '../../context/AuthContext';
 import { fetchConversations, fetchUsers, fetchMessages } from '../../services/messageService';
-import { Send, MessageSquare, Search } from 'lucide-react';
+import { Send, MessageSquare, Search, Sparkles } from 'lucide-react';
 import toast from 'react-hot-toast';
+import { useNavigate } from 'react-router-dom';
 
 const socket = io(process.env.REACT_APP_SOCKET_URL || 'http://localhost:8001');
 
 const Chat = () => {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [conversations, setConversations] = useState([]);
   const [users, setUsers] = useState([]);
   const [selectedUser, setSelectedUser] = useState(null);
@@ -117,6 +119,31 @@ const Chat = () => {
               </div>
             </div>
             <div style={{ overflowY: 'auto', flex: 1 }}>
+              {/* AI Tutor Chat Link */}
+              <div 
+                onClick={() => navigate('/ai-tutor')} 
+                style={{
+                  padding: '12px 16px',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 10,
+                  borderBottom: '1px solid var(--border)',
+                  background: 'rgba(252, 211, 77, 0.05)',
+                  transition: 'all 0.15s'
+                }}
+              >
+                <div className="avatar" style={{ width: 36, height: 36, fontSize: 13, background: 'var(--secondary)', flexShrink: 0 }}>
+                  <Sparkles size={16} color="white" />
+                </div>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ fontWeight: 700, fontSize: 13.5, color: '#d97706', display: 'flex', alignItems: 'center', gap: 4 }}>
+                    AI Tutor Assistant
+                  </div>
+                  <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>Ask questions & get help</div>
+                </div>
+              </div>
+
               {displayList.length === 0 ? (
                 <div style={{ padding: '24px 16px', textAlign: 'center', color: 'var(--text-muted)', fontSize: 12.5, lineHeight: 1.5 }}>
                   {userSearch.trim() === '' 

@@ -4,7 +4,7 @@ import { useAuth } from '../../context/AuthContext';
 import Sidebar from '../../components/layout/Sidebar';
 import { fetchMyCourses } from '../../services/courseService';
 import { fetchMaterials } from '../../services/materialService';
-import { BookOpen, FileText, MessageSquare, TrendingUp, Clock, ArrowRight } from 'lucide-react';
+import { BookOpen, FileText, MessageSquare, TrendingUp, Clock, ArrowRight, Sparkles } from 'lucide-react';
 
 const Dashboard = () => {
   const { user } = useAuth();
@@ -125,14 +125,15 @@ const Dashboard = () => {
         </div>
 
         {/* Quick Actions */}
-        {/* <div className="card" style={{ marginTop: 24 }}>
+        <div className="card" style={{ marginTop: 24 }}>
           <h3 style={{ fontSize: 15, fontWeight: 700, marginBottom: 16 }}>Quick Actions</h3>
           <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
             <Link to="/courses" className="btn btn-outline" style={{ fontSize: 13 }}><BookOpen size={15} /> Browse Courses</Link>
             <Link to="/materials" className="btn btn-outline" style={{ fontSize: 13 }}><FileText size={15} /> View Materials</Link>
             <Link to="/chat" className="btn btn-outline" style={{ fontSize: 13 }}><MessageSquare size={15} /> Open Chat</Link>
+            <Link to="/ai-tutor" className="btn btn-outline" style={{ fontSize: 13, borderColor: '#fcd34d', color: '#d97706' }}><Sparkles size={15} /> AI Tutor Assistant</Link>
           </div>
-        </div> */}
+        </div>
       </main>
     </div>
   );
