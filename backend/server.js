@@ -34,14 +34,17 @@ app.use('/api/messages', require('./routes/messageRoutes'));
 app.use('/api/ai', require('./routes/aiRoutes'));
 app.use('/api/admin', require('./routes/adminRoutes'));
 
-const onlineUsers = new Map();
+const onlineUsers = new Map(); // Map: userId string -> Set of socket.id strings
 
 io.on('connection', (socket) => {
   console.log('User connected:', socket.id);
 
   socket.on('join', (userId) => {
-    onlineUsers.set(userId, socket.id);
     socket.userId = userId;
+    if (!onlineUsers.has(userId)) {
+      onlineUsers.set(userId, new Set());
+    }
+    onlineUsers.get(userId).add(socket.id);
     io.emit('onlineUsers', Array.from(onlineUsers.keys()));
   });
 
@@ -50,11 +53,24 @@ io.on('connection', (socket) => {
     const { saveMessageAndSync } = require('./utils/messageStore');
     try {
       const message = await saveMessageAndSync(senderId, receiverId, content, conversationId);
-      const receiverSocket = onlineUsers.get(receiverId);
-      if (receiverSocket) {
-        io.to(receiverSocket).emit('newMessage', message);
+      
+      // Emit newMessage to all socket connections of the receiver
+      const receiverSockets = onlineUsers.get(receiverId);
+      if (receiverSockets) {
+        receiverSockets.forEach((sid) => {
+          io.to(sid).emit('newMessage', message);
+        });
       }
-      socket.emit('messageSent', message);
+      
+      // Emit messageSent to all socket connections of the sender (replaces single socket.emit for cross-tab sync)
+      const senderSockets = onlineUsers.get(senderId);
+      if (senderSockets) {
+        senderSockets.forEach((sid) => {
+          io.to(sid).emit('messageSent', message);
+        });
+      } else {
+        socket.emit('messageSent', message);
+      }
     } catch (err) {
       socket.emit('error', err.message);
     }
@@ -62,12 +78,19 @@ io.on('connection', (socket) => {
 
   socket.on('disconnect', () => {
     if (socket.userId) {
-      onlineUsers.delete(socket.userId);
+      const userSockets = onlineUsers.get(socket.userId);
+      if (userSockets) {
+        userSockets.delete(socket.id);
+        if (userSockets.size === 0) {
+          onlineUsers.delete(socket.userId);
+        }
+      }
       io.emit('onlineUsers', Array.from(onlineUsers.keys()));
     }
     console.log('User disconnected:', socket.id);
   });
 });
+
 
 app.set('io', io);
 
