@@ -7,6 +7,8 @@ const {
   redirect, 
   firebaseLogin, 
   firebaseRegister,
+  verifyResetCode,
+  confirmResetPassword,
   getAdminCardVisibility,
   setAdminCardVisibility,
   getInstructorCardVisibility,
@@ -20,6 +22,8 @@ router.post('/register', register);
 router.post('/login', login);
 router.post('/firebase-login', firebaseLogin);
 router.post('/firebase-register', firebaseRegister);
+router.post('/verify-reset-code', verifyResetCode);
+router.post('/confirm-reset-password', confirmResetPassword);
 router.get('/redirect', protect, redirect);
 router.get('/me', protect, me);
 router.get('/admin-card-visibility', getAdminCardVisibility);

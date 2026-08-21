@@ -6,6 +6,7 @@ import ProtectedRoute from './components/common/ProtectedRoute';
 
 import Login from './pages/auth/Login';
 import Register from './pages/auth/Register';
+import ResetPassword from './pages/auth/ResetPassword';
 import Dashboard from './pages/student/Dashboard';
 import Courses from './pages/student/Courses';
 import Materials from './pages/student/Materials';
@@ -31,6 +32,7 @@ function App() {
           {/* Public */}
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
+          <Route path="/reset-password" element={<ResetPassword />} />
 
           {/* Student / Instructor */}
           <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />

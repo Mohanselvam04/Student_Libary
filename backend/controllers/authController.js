@@ -378,6 +378,77 @@ async function setStudentCardVisibility(req, res) {
   }
 }
 
+async function verifyResetCode(req, res) {
+  try {
+    const { oobCode } = req.body;
+    if (!oobCode) {
+      return res.status(400).json({ message: 'Reset code (oobCode) is required' });
+    }
+
+    const apiKey = process.env.FIREBASE_API_KEY || 'AIzaSyBfxXLZ27h-bTm_KbBJV6lD7MpIYkMWRf4';
+    const url = `https://identitytoolkit.googleapis.com/v1/accounts:resetPassword?key=${apiKey}`;
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ oobCode }),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      return res.status(400).json({ message: errorData.error?.message || 'Invalid or expired reset code' });
+    }
+
+    const data = await response.json();
+    return res.status(200).json({ email: data.email, requestType: data.requestType });
+  } catch (err) {
+    console.error('Verify reset code error:', err);
+    return res.status(500).json({ message: 'Internal server error' });
+  }
+}
+
+async function confirmResetPassword(req, res) {
+  try {
+    const { oobCode, newPassword } = req.body;
+    if (!oobCode || !newPassword) {
+      return res.status(400).json({ message: 'Reset code (oobCode) and new password are required' });
+    }
+
+    const passwordError = validatePassword(newPassword);
+    if (passwordError) {
+      return res.status(400).json({ message: passwordError });
+    }
+
+    const apiKey = process.env.FIREBASE_API_KEY || 'AIzaSyBfxXLZ27h-bTm_KbBJV6lD7MpIYkMWRf4';
+    const url = `https://identitytoolkit.googleapis.com/v1/accounts:resetPassword?key=${apiKey}`;
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ oobCode, newPassword }),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      return res.status(400).json({ message: errorData.error?.message || 'Failed to reset password' });
+    }
+
+    const data = await response.json();
+    const email = data.email;
+
+    // Find and update password in MongoDB
+    const found = await findUserByEmail(email);
+    if (found) {
+      const { user } = found;
+      user.password = newPassword;
+      await user.save();
+    }
+
+    return res.status(200).json({ success: true, message: 'Password updated successfully' });
+  } catch (err) {
+    console.error('Confirm reset password error:', err);
+    return res.status(500).json({ message: 'Internal server error' });
+  }
+}
+
 module.exports = {
   register,
   login,
@@ -385,6 +456,8 @@ module.exports = {
   me,
   firebaseLogin,
   firebaseRegister,
+  verifyResetCode,
+  confirmResetPassword,
   getAdminCardVisibility,
   setAdminCardVisibility,
   getInstructorCardVisibility,
@@ -392,4 +465,5 @@ module.exports = {
   getStudentCardVisibility,
   setStudentCardVisibility
 };
+
 

@@ -24,3 +24,13 @@ export const fetchRedirectUrl = async () => {
   const res = await api.get('/api/auth/redirect');
   return res.data;
 };
+
+export const verifyResetCode = async (oobCode) => {
+  const res = await api.post('/api/auth/verify-reset-code', { oobCode });
+  return res.data;
+};
+
+export const confirmResetPassword = async (oobCode, newPassword) => {
+  const res = await api.post('/api/auth/confirm-reset-password', { oobCode, newPassword });
+  return res.data;
+};
