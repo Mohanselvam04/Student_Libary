@@ -8,7 +8,7 @@ import toast from 'react-hot-toast';
 const AITutor = () => {
   const { user } = useAuth();
   const [aiMessages, setAiMessages] = useState([
-    { role: 'assistant', content: "👋 Hi! I'm your AI tutor powered by Gemini. Ask me anything about your courses, concepts, or learning goals!" }
+    { role: 'assistant', content: "👋 Hi! I'm your AI tutor powered by Hugging Face Open-Source AI. Ask me anything about your courses, concepts, or learning goals!" }
   ]);
   const [aiInput, setAiInput] = useState('');
   const [aiLoading, setAiLoading] = useState(false);
@@ -182,7 +182,7 @@ const AITutor = () => {
             </button>
           </div>
           <div style={{ fontSize: 10.5, color: 'var(--text-faint)', marginTop: 8, textAlign: 'center' }}>
-            Powered by Gemini. Responses are AI-generated.
+            Powered by Hugging Face Open-Source AI (Qwen 2.5 Coder). Responses are AI-generated.
           </div>
         </div>
 
