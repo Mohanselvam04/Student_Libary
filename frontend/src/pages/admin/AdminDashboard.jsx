@@ -191,6 +191,23 @@ const AdminDashboard = () => {
 
         {loading ? <div className="loading">Loading dashboard data...</div> : (
           <>
+            {/* Tabs */}
+            <div className="tabs" style={{ maxWidth: 500, marginBottom: 28 }}>
+              {['overview', 'users', 'courses', 'settings'].map(t => (
+                <button
+                  key={t}
+                  className={`tab ${activeTab === t ? 'active' : ''}`}
+                  onClick={() => {
+                    setActiveTab(t);
+                    navigate(t === 'overview' ? '/admin' : `/admin/${t}`);
+                  }}
+                  style={{ textTransform: 'capitalize' }}
+                >
+                  {t}
+                </button>
+              ))}
+            </div>
+
             {/* Overview */}
             {activeTab === 'overview' && (
               <AdminOverview
