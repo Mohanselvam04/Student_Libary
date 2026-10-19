@@ -220,7 +220,7 @@ const AdminCourses = ({
               </h2>
               <button onClick={() => setShowModal(null)} style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', fontSize: 24 }}>×</button>
             </div>
-            
+
             <form onSubmit={handleSubmit}>
               <div style={{ display: 'grid', gridTemplateColumns: getPreviewSrc() ? '3fr 2fr' : '1fr', gap: 20 }}>
                 {/* Inputs Column */}
