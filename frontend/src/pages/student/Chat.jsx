@@ -3,7 +3,7 @@ import { io } from 'socket.io-client';
 import Sidebar from '../../components/layout/Sidebar';
 import { useAuth } from '../../context/AuthContext';
 import { fetchConversations, fetchUsers, fetchMessages } from '../../services/messageService';
-import { Send, MessageSquare, Search, Sparkles } from 'lucide-react';
+import { Send, MessageSquare, Search } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { useNavigate } from 'react-router-dom';
 
@@ -21,22 +21,22 @@ const Chat = () => {
   const msgEndRef = useRef();
 
   const loadConversations = async () => {
-    try { 
-      const data = await fetchConversations(); 
-      setConversations(data || []); 
-    } catch {}
+    try {
+      const data = await fetchConversations();
+      setConversations(data || []);
+    } catch { }
   };
 
   const loadUsers = async () => {
-    try { 
-      const data = await fetchUsers(); 
-      setUsers(data || []); 
-    } catch {}
+    try {
+      const data = await fetchUsers();
+      setUsers(data || []);
+    } catch { }
   };
 
   useEffect(() => {
     socket.emit('join', user._id);
-    
+
     const handleNewMessage = (msg) => {
       if (selectedUser && msg.sender._id === selectedUser._id) {
         setMessages(prev => [...prev, msg]);
@@ -47,7 +47,7 @@ const Chat = () => {
     socket.on('newMessage', handleNewMessage);
     loadConversations();
     loadUsers();
-    
+
     return () => socket.off('newMessage');
   }, [user._id, selectedUser]);
 
@@ -55,10 +55,10 @@ const Chat = () => {
 
   const selectUser = async (u) => {
     setSelectedUser(u);
-    try { 
-      const data = await fetchMessages(u._id); 
-      setMessages(data || []); 
-    } catch {}
+    try {
+      const data = await fetchMessages(u._id);
+      setMessages(data || []);
+    } catch { }
   };
 
   const sendMessage = async (e) => {
@@ -89,10 +89,10 @@ const Chat = () => {
   // When search is empty, show active conversations. Otherwise, show filtered list from database users
   const displayList = userSearch.trim() === ''
     ? conversations.map(c => c.otherUser).filter(Boolean)
-    : users.filter(u => 
-        u.name.toLowerCase().includes(userSearch.toLowerCase()) ||
-        (u.email && u.email.toLowerCase().includes(userSearch.toLowerCase()))
-      );
+    : users.filter(u =>
+      u.name.toLowerCase().includes(userSearch.toLowerCase()) ||
+      (u.email && u.email.toLowerCase().includes(userSearch.toLowerCase()))
+    );
 
   const initials = (name) => name?.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2) || '?';
 
@@ -110,44 +110,19 @@ const Chat = () => {
             <div style={{ padding: '16px' }}>
               <div className="search-bar">
                 <Search size={14} />
-                <input 
-                  placeholder="Search name or email..." 
-                  value={userSearch} 
-                  onChange={e => setUserSearch(e.target.value)} 
-                  style={{ fontSize: 13 }} 
+                <input
+                  placeholder="Search name or email..."
+                  value={userSearch}
+                  onChange={e => setUserSearch(e.target.value)}
+                  style={{ fontSize: 13 }}
                 />
               </div>
             </div>
             <div style={{ overflowY: 'auto', flex: 1 }}>
-              {/* AI Tutor Chat Link */}
-              <div 
-                onClick={() => navigate('/ai-tutor')} 
-                style={{
-                  padding: '12px 16px',
-                  cursor: 'pointer',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: 10,
-                  borderBottom: '1px solid var(--border)',
-                  background: 'rgba(252, 211, 77, 0.05)',
-                  transition: 'all 0.15s'
-                }}
-              >
-                <div className="avatar" style={{ width: 36, height: 36, fontSize: 13, background: 'var(--secondary)', flexShrink: 0 }}>
-                  <Sparkles size={16} color="white" />
-                </div>
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ fontWeight: 700, fontSize: 13.5, color: '#d97706', display: 'flex', alignItems: 'center', gap: 4 }}>
-                    AI Tutor Assistant
-                  </div>
-                  <div style={{ fontSize: 11, color: 'var(--text-muted)' }}>Ask questions & get help</div>
-                </div>
-              </div>
-
               {displayList.length === 0 ? (
                 <div style={{ padding: '24px 16px', textAlign: 'center', color: 'var(--text-muted)', fontSize: 12.5, lineHeight: 1.5 }}>
-                  {userSearch.trim() === '' 
-                    ? 'No active chats. Search for a user by name or email to start a conversation.' 
+                  {userSearch.trim() === ''
+                    ? 'No active chats. Search for a user by name or email to start a conversation.'
                     : 'No matching users found.'}
                 </div>
               ) : (
