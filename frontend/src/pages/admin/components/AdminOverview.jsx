@@ -26,7 +26,7 @@ const AdminOverview = ({ stats, users, courses, initials }) => {
           </div>
         ))}
       </div>
-      
+
       <div className="grid-2">
         <div className="card">
           <h3 style={{ fontSize: 15, fontWeight: 700, marginBottom: 16 }}>Recent Users</h3>
