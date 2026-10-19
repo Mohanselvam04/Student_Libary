@@ -31,10 +31,10 @@ const Materials = () => {
       if (typeFilter !== 'all') params.type = typeFilter;
       const data = await fetchMaterials(params);
       setMaterials(data || []);
-    } catch { 
-      toast.error('Failed to load materials'); 
-    } finally { 
-      setLoading(false); 
+    } catch {
+      toast.error('Failed to load materials');
+    } finally {
+      setLoading(false);
     }
   };
 
