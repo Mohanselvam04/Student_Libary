@@ -35,7 +35,7 @@ const Sidebar = () => {
       fetchUnread();
     };
     socket.on('newMessage', handleNewMsg);
-    
+
     // Periodically sync unread counts as fallback every 15 seconds
     const interval = setInterval(fetchUnread, 15000);
 
@@ -49,17 +49,18 @@ const Sidebar = () => {
     { to: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
     { to: '/courses', icon: BookOpen, label: 'Courses' },
     { to: '/materials', icon: FileText, label: 'Materials' },
-    { to: '/chat', icon: MessageSquare, label: 'Chat' },
     { to: '/ai-tutor', icon: Sparkles, label: 'AI Tutor' },
+    { to: '/chat', icon: MessageSquare, label: 'Messaging' },
   ];
 
   const adminLinks = [
     { to: '/admin', icon: BarChart3, label: 'Overview' },
     { to: '/admin/users', icon: Users, label: 'Users' },
     { to: '/admin/courses', icon: BookOpen, label: 'Courses' },
-    { to: '/admin/settings', icon: Settings, label: 'Settings' },
     { to: '/materials', icon: FileText, label: 'Materials' },
+    { to: '/ai-tutor', icon: Sparkles, label: 'AI Tutor' },
     { to: '/chat', icon: MessageSquare, label: 'Messaging' },
+    { to: '/admin/settings', icon: Settings, label: 'Settings' },
   ];
 
   const links = user?.role === 'admin' ? adminLinks : studentLinks;
@@ -125,7 +126,7 @@ const Sidebar = () => {
         }}>
           {user?.role === 'admin' ? 'Admin Menu' : 'Main Menu'}
         </div>
-        
+
         <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
           {links.map(({ to, icon: Icon, label }) => (
             <NavLink
