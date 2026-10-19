@@ -30,33 +30,46 @@ const Register = () => {
   const { register } = useAuth();
   const navigate = useNavigate();
 
+  // Codebase Configuration Toggles (Set to true or false to enable/disable role cards)
+  const ENABLE_ADMIN_CARD = true;
+  const ENABLE_INSTRUCTOR_CARD = true;
+  const ENABLE_STUDENT_CARD = true;
+
   // Card Visibility Management
-  const [adminCardVisible, setAdminCardVisible] = useState(true);
-  const [instructorCardVisible, setInstructorCardVisible] = useState(true);
-  const [studentCardVisible, setStudentCardVisible] = useState(true);
+  const [adminCardVisible, setAdminCardVisible] = useState(ENABLE_ADMIN_CARD);
+  const [instructorCardVisible, setInstructorCardVisible] = useState(ENABLE_INSTRUCTOR_CARD);
+  const [studentCardVisible, setStudentCardVisible] = useState(ENABLE_STUDENT_CARD);
 
   useEffect(() => {
+    let isMounted = true;
     const fetchVisibility = async () => {
       try {
+        const timestamp = Date.now();
         const [adminRes, instructorRes, studentRes] = await Promise.all([
-          api.get('/api/auth/admin-card-visibility'),
-          api.get('/api/auth/instructor-card-visibility'),
-          api.get('/api/auth/student-card-visibility')
+          api.get(`/api/auth/admin-card-visibility?t=${timestamp}`),
+          api.get(`/api/auth/instructor-card-visibility?t=${timestamp}`),
+          api.get(`/api/auth/student-card-visibility?t=${timestamp}`)
         ]);
-        setAdminCardVisible(adminRes.data.visible);
-        setInstructorCardVisible(instructorRes.data.visible);
-        setStudentCardVisible(studentRes.data.visible);
-        
+        if (!isMounted) return;
+
+        const isAdminVis = ENABLE_ADMIN_CARD && !!adminRes.data.visible;
+        const isInstVis = ENABLE_INSTRUCTOR_CARD && !!instructorRes.data.visible;
+        const isStudVis = ENABLE_STUDENT_CARD && !!studentRes.data.visible;
+
+        setAdminCardVisible(isAdminVis);
+        setInstructorCardVisible(isInstVis);
+        setStudentCardVisible(isStudVis);
+
         let fallbackRole = form.role;
-        if (!adminRes.data.visible && fallbackRole === 'admin') {
+        if (!isAdminVis && fallbackRole === 'admin') {
           fallbackRole = 'student';
         }
-        if (!instructorRes.data.visible && fallbackRole === 'instructor') {
+        if (!isInstVis && fallbackRole === 'instructor') {
           fallbackRole = 'student';
         }
-        if (!studentRes.data.visible && fallbackRole === 'student') {
-          if (instructorRes.data.visible) fallbackRole = 'instructor';
-          else if (adminRes.data.visible) fallbackRole = 'admin';
+        if (!isStudVis && fallbackRole === 'student') {
+          if (isInstVis) fallbackRole = 'instructor';
+          else if (isAdminVis) fallbackRole = 'admin';
         }
         if (fallbackRole !== form.role) {
           setForm(prev => ({ ...prev, role: fallbackRole }));
@@ -66,6 +79,7 @@ const Register = () => {
       }
     };
     fetchVisibility();
+    return () => { isMounted = false; };
   }, []);
 
   const passwordChecks = validatePassword(form.password);
@@ -163,21 +177,19 @@ const Register = () => {
             </div>
 
             <fieldset className="form-group" style={{ border: 'none', padding: 0, margin: '0 0 24px 0' }}>
-              {/* <legend style={{ marginBottom: 10, fontWeight: 500, fontSize: 13, color: 'var(--text-muted)' }}>I am joining as</legend> */}
               <div style={{
                 display: 'grid',
-                gridTemplateColumns: `repeat(${
-                  ['student', 'instructor', 'admin'].filter(role => 
-                    (role === 'student' && studentCardVisible) || 
-                    (role === 'admin' && adminCardVisible) || 
-                    (role === 'instructor' && instructorCardVisible)
-                  ).length
-                }, 1fr)`,
+                gridTemplateColumns: `repeat(${['student', 'instructor', 'admin'].filter(role =>
+                  (role === 'student' && studentCardVisible) ||
+                  (role === 'admin' && adminCardVisible) ||
+                  (role === 'instructor' && instructorCardVisible)
+                ).length
+                  }, 1fr)`,
                 gap: 10
               }}>
-                {['student', 'instructor', 'admin'].filter(role => 
-                  (role === 'student' && studentCardVisible) || 
-                  (role === 'admin' && adminCardVisible) || 
+                {['student', 'instructor', 'admin'].filter(role =>
+                  (role === 'student' && studentCardVisible) ||
+                  (role === 'admin' && adminCardVisible) ||
                   (role === 'instructor' && instructorCardVisible)
                 ).map((roleItem) => {
                   let icon = '🛡️';
