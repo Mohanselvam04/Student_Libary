@@ -20,12 +20,12 @@ const isPasswordStrong = (password) => {
 const ResetPassword = () => {
   const [searchParams] = useSearchParams();
   const oobCode = searchParams.get('oobCode');
-  
+
   const [email, setEmail] = useState('');
   const [verifying, setVerifying] = useState(true);
   const [codeValid, setCodeValid] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
-  
+
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -132,14 +132,14 @@ const ResetPassword = () => {
               <label htmlFor="new-password">New Password</label>
               <div style={{ position: 'relative' }}>
                 <Lock size={16} style={{ position: 'absolute', left: 14, top: '50%', transform: 'translateY(-50%)', color: 'var(--text-faint)' }} />
-                <input 
-                  id="new-password" 
-                  type={showPassword ? 'text' : 'password'} 
-                  placeholder="New strong password" 
+                <input
+                  id="new-password"
+                  type={showPassword ? 'text' : 'password'}
+                  placeholder="New strong password"
                   value={password}
                   onChange={e => setPassword(e.target.value)}
-                  style={{ paddingLeft: 42, paddingRight: 42 }} 
-                  required 
+                  style={{ paddingLeft: 42, paddingRight: 42 }}
+                  required
                 />
                 <button type="button" onClick={() => setShowPassword(!showPassword)}
                   style={{ position: 'absolute', right: 12, top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-faint)' }}>
@@ -152,14 +152,14 @@ const ResetPassword = () => {
               <label htmlFor="confirm-new-password">Confirm Password</label>
               <div style={{ position: 'relative' }}>
                 <Lock size={16} style={{ position: 'absolute', left: 14, top: '50%', transform: 'translateY(-50%)', color: 'var(--text-faint)' }} />
-                <input 
-                  id="confirm-new-password" 
-                  type={showPassword ? 'text' : 'password'} 
-                  placeholder="Confirm new password" 
+                <input
+                  id="confirm-new-password"
+                  type={showPassword ? 'text' : 'password'}
+                  placeholder="Confirm new password"
                   value={confirmPassword}
                   onChange={e => setConfirmPassword(e.target.value)}
-                  style={{ paddingLeft: 42, paddingRight: 42 }} 
-                  required 
+                  style={{ paddingLeft: 42, paddingRight: 42 }}
+                  required
                 />
               </div>
             </div>
