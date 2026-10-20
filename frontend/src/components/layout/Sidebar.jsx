@@ -3,7 +3,7 @@ import { NavLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import {
   LayoutDashboard, BookOpen, FileText, MessageSquare, Users,
-  LogOut, GraduationCap, BarChart3, Settings, Sparkles
+  LogOut, GraduationCap, BarChart3, Settings, Sparkles, Menu, X
 } from 'lucide-react';
 import { io } from 'socket.io-client';
 import api from '../../services/api';
@@ -14,6 +14,7 @@ const Sidebar = () => {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
   const [unreadCount, setUnreadCount] = useState(0);
+  const [mobileOpen, setMobileOpen] = useState(false);
 
   const fetchUnread = async () => {
     try {
@@ -28,11 +29,11 @@ const Sidebar = () => {
 
   useEffect(() => {
     if (!user) return;
-    fetchUnread();
+    void fetchUnread();
 
     socket.emit('join', user._id);
     const handleNewMsg = () => {
-      fetchUnread();
+      void fetchUnread();
     };
     socket.on('newMessage', handleNewMsg);
 
@@ -44,6 +45,14 @@ const Sidebar = () => {
       clearInterval(interval);
     };
   }, [user]);
+
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth > 900) setMobileOpen(false);
+    };
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   const studentLinks = [
     { to: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
@@ -68,52 +77,55 @@ const Sidebar = () => {
   const handleLogout = () => {
     logout();
     navigate('/login');
+    setMobileOpen(false);
   };
 
   const initials = user?.name?.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2) || 'U';
 
-  return (
-    <aside style={{
-      width: 'var(--sidebar-width)',
-      background: 'white',
-      borderRight: '1px solid #f1f5f9',
-      position: 'fixed',
-      top: 0,
-      left: 0,
-      height: '100vh',
-      display: 'flex',
-      flexDirection: 'column',
-      zIndex: 100,
-      padding: '0 0 20px 0',
-      boxShadow: '0 4px 12px rgba(0,0,0,0.02)'
-    }}>
-      {/* Logo */}
+  const sidebarContent = (
+    <>
       <div style={{
         padding: '20px',
         borderBottom: '1px solid #f1f5f9',
         display: 'flex',
         alignItems: 'center',
+        justifyContent: 'space-between',
         gap: 12
       }}>
-        <div style={{
-          width: 38,
-          height: 38,
-          background: 'linear-gradient(135deg, #2e7d32 0%, #66bb6a 100%)',
-          borderRadius: 10,
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          boxShadow: '0 4px 10px rgba(46,125,50,0.2)'
-        }}>
-          <GraduationCap size={20} color="white" />
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+          <div style={{
+            width: 38,
+            height: 38,
+            background: 'linear-gradient(135deg, #2e7d32 0%, #66bb6a 100%)',
+            borderRadius: 10,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            boxShadow: '0 4px 10px rgba(46,125,50,0.2)'
+          }}>
+            <GraduationCap size={20} color="white" />
+          </div>
+          <div>
+            <div style={{ fontWeight: 700, fontSize: 15, color: '#1e293b', letterSpacing: '-0.02em' }}>LearnHub</div>
+            <div style={{ fontSize: 10, color: '#94a3b8', textTransform: 'uppercase', fontWeight: 600, letterSpacing: '0.05em' }}>LMS Portal</div>
+          </div>
         </div>
-        <div>
-          <div style={{ fontWeight: 700, fontSize: 15, color: '#1e293b', letterSpacing: '-0.02em' }}>LearnHub</div>
-          <div style={{ fontSize: 10, color: '#94a3b8', textTransform: 'uppercase', fontWeight: 600, letterSpacing: '0.05em' }}>LMS Portal</div>
-        </div>
+        <button
+          onClick={() => setMobileOpen(false)}
+          style={{
+            display: 'none',
+            background: 'transparent',
+            border: 'none',
+            color: '#64748b',
+            cursor: 'pointer'
+          }}
+          className="sidebar-close-btn"
+          aria-label="Close menu"
+        >
+          <X size={20} />
+        </button>
       </div>
 
-      {/* Nav Links */}
       <nav style={{ flex: 1, padding: '24px 16px', overflowY: 'auto' }}>
         <div style={{
           fontSize: 10,
@@ -133,6 +145,7 @@ const Sidebar = () => {
               key={to}
               to={to}
               end={to === '/admin' || to === '/dashboard'}
+              onClick={() => setMobileOpen(false)}
               style={({ isActive }) => ({
                 display: 'flex',
                 alignItems: 'center',
@@ -172,7 +185,6 @@ const Sidebar = () => {
         </div>
       </nav>
 
-      {/* User Profile */}
       <div style={{ padding: '0 16px' }}>
         <div style={{
           background: 'linear-gradient(135deg, #2e7d32 0%, #43a047 100%)',
@@ -215,7 +227,97 @@ const Sidebar = () => {
           <LogOut size={15} /> Logout
         </button>
       </div>
-    </aside>
+    </>
+
+  );
+
+  return (
+    <>
+      <button
+        onClick={() => setMobileOpen(true)}
+        style={{
+          position: 'fixed',
+          top: 14,
+          left: 14,
+          zIndex: 200,
+          background: 'white',
+          border: '1px solid #e2e8f0',
+          borderRadius: 10,
+          width: 42,
+          height: 42,
+          display: 'none',
+          alignItems: 'center',
+          justifyContent: 'center',
+          color: '#1e293b',
+          boxShadow: '0 8px 18px rgba(15,23,42,0.08)',
+          cursor: 'pointer'
+        }}
+        className="mobile-menu-btn"
+        aria-label="Open menu"
+      >
+        <Menu size={20} />
+      </button>
+
+      <aside className="sidebar-desktop" style={{
+        width: 'var(--sidebar-width)',
+        background: 'white',
+        borderRight: '1px solid #f1f5f9',
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        height: '100vh',
+        display: 'flex',
+        flexDirection: 'column',
+        zIndex: 100,
+        padding: '0 0 20px 0',
+        boxShadow: '0 4px 12px rgba(0,0,0,0.02)'
+      }}>
+        {sidebarContent}
+      </aside>
+
+      {mobileOpen && (
+        <button
+          type="button"
+          onClick={() => setMobileOpen(false)}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              e.preventDefault();
+              setMobileOpen(false);
+            }
+          }}
+          style={{
+            position: 'fixed',
+            inset: 0,
+            background: 'rgba(15, 23, 42, 0.5)',
+            zIndex: 150,
+            border: 'none',
+            padding: 0,
+            display: 'block',
+            cursor: 'pointer'
+          }}
+          aria-label="Close side menu"
+        />
+      )}
+
+      <aside style={{
+        width: '84%',
+        maxWidth: 280,
+        background: 'white',
+        borderRight: '1px solid #f1f5f9',
+        position: 'fixed',
+        top: 0,
+        left: mobileOpen ? 0 : '-110%',
+        height: '100vh',
+        display: 'none',
+        flexDirection: 'column',
+        zIndex: 200,
+        padding: '0 0 20px 0',
+        boxShadow: '0 10px 25px rgba(0,0,0,0.12)',
+        transition: 'left 0.25s ease',
+      }} className="sidebar-mobile">
+        {sidebarContent}
+      </aside>
+    </>
   );
 };
 
