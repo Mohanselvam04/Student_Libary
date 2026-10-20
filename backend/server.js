@@ -1,4 +1,3 @@
-
 const express = require('express');
  const mongoose = require('mongoose');
 const cors = require('cors');
@@ -94,14 +93,13 @@ io.on('connection', (socket) => {
 
 app.set('io', io);
 
-const START_PORT = parseInt(process.env.PORT, 10) || 5000;
+const PORT = process.env.PORT || 10000;
 
 (async () => {
   try {
     await connect();
-    const port = START_PORT;
-    server.listen(port, () => {
-      console.log(`🚀 Server running on port ${port}`);
+    server.listen(PORT, '0.0.0.0', () => {
+      console.log(`🚀 Server running on port ${PORT}`);
     });
     server.on('error', (err) => {
       console.error('Server error:', err);
@@ -123,4 +121,4 @@ process.on('uncaughtException', (err) => {
 process.on('unhandledRejection', (reason) => {
   console.error('Unhandled Rejection:', reason);
 });
-// Nodemon trigger comment
+// Nodemon trigger comment 2
